@@ -29,7 +29,7 @@ punten_tabel = {
     "Open Miserie": {"basispunten": 24, "verliezen": -24, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
     "Solo 12": {"basispunten": 30, "verliezen": -30, "overslag": 0, "minimum_slagen": 9, "team": False},
     "Solo Slim 13": {"basispunten": 60, "verliezen": -60, "overslag": 0, "minimum_slagen": 13, "team": False},
-    }
+}
 
 # Scores laden
 def load_scores():
@@ -41,12 +41,13 @@ def load_scores():
             "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
             "historiek": [],
-            "deler": 1  # ✅ Voeg de deler toe aan de standaardwaarden!
+            "deler": 1,
+            "spel_nummer": 1
         }
 
 # Scores opslaan
 def save_scores(data):
-    with open("data/scores.json", "w") as file:
+    with open(SCORES_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
 # Laad bestaande scores
@@ -67,73 +68,28 @@ def bereken():
 
     info = punten_tabel.get(contract, {})
 
-    # ✅ **Automatisch teamgenoten leegmaken als het een solo-spel is**
     if not info.get("team"):
-        teamgenoten = []  # Leegmaken van teamgenoten als het een solo-contract is
+        teamgenoten = []
 
-    # ✅ **Controle: Als een teamspel is gekozen, moet er een teamgenoot aangeduid worden**
-    if info.get("team") and len(teamgenoten) == 0:
-        return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
+    teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
 
-    # ✅ **Controle: Als een solo-spel is gekozen, mag je géén extra spelers aanduiden**
-    if not info.get("team") and len(teamgenoten) > 0:
-        return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
-
-    # ✅ **Controle: "Wie zet" mag niet in "Wie speelt mee" staan**
-    if str(zetter) in teamgenoten:
-        return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
-
-    # ✅ **Standaardberekening**
-    if slagen == 13:
-        punten = 30
-    elif contract == "Miserie" and slagen > info.get("max_slagen", 0):
-        punten = info["verliezen"]
-    elif contract == "Miserie":
-        punten = info["basispunten"]
-    elif slagen >= info["minimum_slagen"]:
+    if slagen >= info["minimum_slagen"]:
         overslagen = max(0, slagen - info["minimum_slagen"])
         punten = info["basispunten"] + (overslagen * info["overslag"])
     else:
         punten = info["verliezen"]
 
-    # ✅ Scoreverdeling: team vs. solo
-    tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
-
-    if info["team"]:
-        for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
-            scores["scores"][speler] += punten
-        for speler in tegenstanders:
-            scores["scores"][speler] -= punten
-    else:
-        for speler in tegenstanders:
-            scores["scores"][speler] -= punten
-        scores["scores"][f"Speler {zetter}"] += punten * 3
-
-teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
-
     scores["historiek"].append(
-        f"Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
+        f"Spel {scores['spel_nummer']}: Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, "
         f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
     )
-    
-    scores["deler"] = (scores.get("deler", 1) % 4) + 1  # ✅ Nu goed uitgelijnd!
+
+    scores["spel_nummer"] += 1
+    scores["deler"] = (scores["deler"] % 4) + 1
+    scores["deler_naam"] = scores["namen"][f"Speler {scores['deler']}"]
 
     save_scores(scores)
-
-    return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
-    
-@app.route('/update_score', methods=['POST'])
-def update_score():
-    global scores
-    data = request.json
-    speler = data.get("speler")
-    nieuwe_score = data.get("score")
-
-    if speler in scores["scores"]:
-        scores["scores"][speler] = nieuwe_score
-        save_scores(scores)
-
-    return jsonify({"scores": scores["scores"]})
+    return jsonify(scores)
 
 @app.route('/reset', methods=['POST'])
 def reset():
@@ -142,7 +98,8 @@ def reset():
         "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
         "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
         "historiek": [],
-        "deler": 1  # ✅ Reset "deler" naar speler 1
+        "deler": 1,
+        "spel_nummer": 1
     }
     save_scores(scores)
     return jsonify({"message": "Scores en historiek gereset!"})
@@ -150,41 +107,20 @@ def reset():
 @app.route('/get_scores', methods=['GET'])
 def get_scores():
     global scores
-    return jsonify({
-        "namen": scores.get("namen", {  
-            "Speler 1": "Speler 1",
-            "Speler 2": "Speler 2",
-            "Speler 3": "Speler 3",
-            "Speler 4": "Speler 4"
-        }),
-        "scores": scores.get("scores", {
-            "Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0
-        }),
-        "historiek": scores.get("historiek", []),
-        "deler": scores.get("deler", 1)
-    })  # ✅ DIT HAAKJE ONTBREEKT IN JOUW CODE!
+    return jsonify(scores)
 
 @app.route('/update_namen', methods=['POST'])
 def update_namen():
     global scores
     data = request.json
-
-    # ✅ Zorg dat de "namen" dictionary bestaat
-    if "namen" not in scores:
-        scores["namen"] = {}
-
-    # ✅ Update de namen in de backend
     for i in range(1, 5):
         speler_key = f"Speler {i}"
         if speler_key in data:
             scores["namen"][speler_key] = data[speler_key]
 
-    # ✅ Sla de namen correct op
     save_scores(scores)
-
     return jsonify({"message": "Namen bijgewerkt!", "namen": scores["namen"]})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
