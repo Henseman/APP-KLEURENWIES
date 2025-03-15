@@ -45,7 +45,7 @@ def load_scores():
 
 # Scores opslaan
 def save_scores(data):
-    with open(SCORES_FILE, "w") as file:
+    with open("data/scores.json", "w") as file:
         json.dump(data, file, indent=4)
 
 # Laad bestaande scores
