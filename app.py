@@ -53,7 +53,11 @@ def bereken():
    if contract in punten_tabel:
     info = punten_tabel[contract]
 
-    # ✅ Toegevoegde code voor Kleine Miserie
+ # ✅ Als een speler 13 slagen haalt, is de score altijd 30 punten
+    if slagen == 13:
+        punten = 30   
+        
+ # ✅ Toegevoegde code voor Kleine Miserie
     if contract == "Kleine Miserie" and slagen > info["max_slagen"]:
         punten = info["verliezen"]  # Speler haalt slagen → verlies
     elif contract == "Kleine Miserie":
