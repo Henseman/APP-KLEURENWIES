@@ -4,10 +4,10 @@ import os
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# 🟢 **Pad naar JSON-bestand**
+# Bestandspad
 SCORES_FILE = "data/scores.json"
 
-# 🟠 **Puntentabel voor Kleurenwies**
+# Puntentabel voor Kleurenwies
 punten_tabel = {
     "Samen 8": {"basispunten": 8, "verliezen": -11, "overslag": 3, "minimum_slagen": 8, "team": True},
     "Solo 5": {"basispunten": 3, "verliezen": -4, "overslag": 1, "minimum_slagen": 5, "team": False},
@@ -15,17 +15,11 @@ punten_tabel = {
     "Solo 6": {"basispunten": 4, "verliezen": -5, "overslag": 1, "minimum_slagen": 6, "team": False},
     "Samen 10": {"basispunten": 14, "verliezen": -17, "overslag": 3, "minimum_slagen": 10, "team": True},
     "Solo 7": {"basispunten": 5, "verliezen": -6, "overslag": 1, "minimum_slagen": 7, "team": False},
-    "Kleine Miserie": {"basispunten": 6, "verliezen": -6, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Piccolo": {"basispunten": 8, "verliezen": -8, "overslag": 0, "minimum_slagen": 1, "max_slagen": 1, "team": False},
 }
 
-# 🟢 **JSON-bestand inladen of aanmaken**
+# **🟢 JSON-bestand inladen of aanmaken**
 def load_scores():
-    if not os.path.exists("data"):
-        os.makedirs("data")
-
     if not os.path.exists(SCORES_FILE):
-        print("[INFO] scores.json niet gevonden. Nieuw bestand wordt aangemaakt.")
         save_scores({
             "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
@@ -33,33 +27,53 @@ def load_scores():
             "deler": 1,
             "ronde": 1
         })
-
     try:
         with open(SCORES_FILE, "r") as file:
             return json.load(file)
     except json.JSONDecodeError:
-        print("[ERROR] scores.json bevat corrupte data. Bestand wordt gereset!")
-        return reset_scores()
+        return {
+            "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
+            "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
+            "historiek": [],
+            "deler": 1,
+            "ronde": 1
+        }
 
-# 🟠 **JSON opslaan**
+# **🔵 JSON opslaan**
 def save_scores(data):
     with open(SCORES_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# **🟢 Laad bestaande scores**
+# **🟠 Laad bestaande scores**
 scores = load_scores()
 
-# **✅ Startpagina laden**
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template("index.html", 
+                           namen=scores["namen"], 
+                           ronde=scores.get("ronde", 1), 
+                           deler=scores.get("deler", 1),
+                           scores=scores["scores"],
+                           historiek=scores["historiek"])
 
-# **🔵 Haal de huidige scores op (voor AJAX frontend)**
-@app.route('/get_scores', methods=['GET'])
+# **🟢 API: Scores ophalen**
+@app.route('/get_scores')
 def get_scores():
     return jsonify(scores)
 
-# **🔵 Score berekenen**
+# **🟢 API: Namen updaten**
+@app.route('/update_namen', methods=['POST'])
+def update_namen():
+    global scores
+    data = request.json
+    if not data:
+        return jsonify({"error": "Geen namen ontvangen!"}), 400
+
+    scores["namen"] = data
+    save_scores(scores)
+    return jsonify({"message": "Namen geüpdatet!", "namen": scores["namen"]})
+
+# **🔵 API: Score berekenen**
 @app.route('/bereken', methods=['POST'])
 def bereken():
     global scores
@@ -70,13 +84,10 @@ def bereken():
         zetter = data.get("zetter")
         teamgenoten = data.get("teamgenoten", [])
 
-        if contract not in punten_tabel:
-            return jsonify({"error": "Ongeldig contract!"}), 400
-        if not (0 <= slagen <= 13):
-            return jsonify({"error": "Slagen moeten tussen 0 en 13 liggen!"}), 400
+        if contract not in punten_tabel or not zetter:
+            return jsonify({"error": "Ongeldige invoer!"}), 400
 
         info = punten_tabel[contract]
-
         if not info["team"]:
             teamgenoten = []
 
@@ -103,32 +114,21 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
-        teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
-        scores["historiek"].append(
-            f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
-            f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
-        )
+        scores["historiek"].append(f"Ronde {scores['ronde']}: {contract}, Zetter: {zetter}, Punten: {punten}")
 
         scores["ronde"] += 1
         scores["deler"] = (scores["deler"] % 4) + 1
 
         save_scores(scores)
 
-        return jsonify({
-            "punten": punten,
-            "scores": scores["scores"],
-            "historiek": scores["historiek"],
-            "namen": scores["namen"],
-            "deler": scores["deler"],
-            "ronde": scores["ronde"]
-        })
-    
+        return jsonify(scores)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# **🔴 Reset scores**
+# **🔴 API: Reset scores**
 @app.route('/reset', methods=['POST'])
-def reset_scores():
+def reset():
     global scores
     scores = {
         "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
