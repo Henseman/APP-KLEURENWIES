@@ -142,3 +142,20 @@ def reset():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
+@app.route('/get_scores', methods=['GET'])
+def get_scores():
+    global scores
+    return jsonify({
+        "namen": scores.get("namen", {  # ✅ Zorgt ervoor dat er altijd namen terugkomen
+            "Speler 1": "Speler 1",
+            "Speler 2": "Speler 2",
+            "Speler 3": "Speler 3",
+            "Speler 4": "Speler 4"
+        }),
+        "scores": scores.get("scores", {
+            "Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0
+        }),
+        "historiek": scores.get("historiek", []),
+        "deler": scores.get("deler", 1)
+    })
