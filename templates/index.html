@@ -129,32 +129,23 @@
                 document.getElementById("ronde").innerText = ronde;
                 document.getElementById("gever").innerText = namen["Speler " + deler];
 
-                document.getElementById("speler1").value = namen["Speler 1"];
-                document.getElementById("speler2").value = namen["Speler 2"];
-                document.getElementById("speler3").value = namen["Speler 3"];
-                document.getElementById("speler4").value = namen["Speler 4"];
+                let spelerKeys = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
 
-                document.getElementById("naam1").innerText = namen["Speler 1"];
-                document.getElementById("naam2").innerText = namen["Speler 2"];
-                document.getElementById("naam3").innerText = namen["Speler 3"];
-                document.getElementById("naam4").innerText = namen["Speler 4"];
+                spelerKeys.forEach((speler, index) => {
+                    document.getElementById("speler" + (index + 1)).value = namen[speler];
+                    document.getElementById("naam" + (index + 1)).innerText = namen[speler];
+                });
 
                 zetterDropdown.innerHTML = "";
                 teamgenotenDropdown.innerHTML = "";
 
-                for (let i = 1; i <= 4; i++) {
-                    let spelerNaam = namen["Speler " + i];
+                spelerKeys.forEach((speler, index) => {
+                    let optieZetter = new Option(namen[speler], index + 1);
+                    zetterDropdown.add(optieZetter);
 
-                    let optionZetter = document.createElement("option");
-                    optionZetter.value = i;
-                    optionZetter.textContent = spelerNaam;
-                    zetterDropdown.appendChild(optionZetter);
-
-                    let optionTeamgenoot = document.createElement("option");
-                    optionTeamgenoot.value = i;
-                    optionTeamgenoot.textContent = spelerNaam;
-                    teamgenotenDropdown.appendChild(optionTeamgenoot);
-                }
+                    let optieTeamgenoot = new Option(namen[speler], index + 1);
+                    teamgenotenDropdown.add(optieTeamgenoot);
+                });
             })
             .catch(error => console.error("Fout bij ophalen van namen:", error));
         }
