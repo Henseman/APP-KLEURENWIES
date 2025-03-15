@@ -84,13 +84,6 @@
     </select>
     <br>
 
-<h3>Spelersnamen instellen:</h3>
-<input type="text" id="speler1" value="Speler 1">
-<input type="text" id="speler2" value="Speler 2">
-<input type="text" id="speler3" value="Speler 3">
-<input type="text" id="speler4" value="Speler 4">
-<button onclick="updateNamen()">Update Namen</button>
-
 <h3>Wie zet?</h3>
 <select id="zetter"></select>
 <br>
@@ -107,17 +100,22 @@
             let zetterDropdown = document.getElementById("zetter");
             let teamgenotenDropdown = document.getElementById("teamgenoten");
 
-            // Vul inputvelden met huidige namen
+            // Update de inputvelden met de huidige namen
             document.getElementById("speler1").value = namen["Speler 1"];
             document.getElementById("speler2").value = namen["Speler 2"];
             document.getElementById("speler3").value = namen["Speler 3"];
             document.getElementById("speler4").value = namen["Speler 4"];
 
-            // Maak dropdowns leeg
+            // Update de namen in de scoretabel
+            document.getElementById("naam1").innerText = namen["Speler 1"];
+            document.getElementById("naam2").innerText = namen["Speler 2"];
+            document.getElementById("naam3").innerText = namen["Speler 3"];
+            document.getElementById("naam4").innerText = namen["Speler 4"];
+
+            // Maak dropdowns leeg en vul ze opnieuw met de juiste namen
             zetterDropdown.innerHTML = "";
             teamgenotenDropdown.innerHTML = "";
 
-            // Vul de dropdowns opnieuw met de juiste namen
             for (let i = 1; i <= 4; i++) {
                 let spelerNaam = namen["Speler " + i];
 
