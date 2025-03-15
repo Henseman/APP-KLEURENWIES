@@ -124,7 +124,6 @@
                 let ronde = data.ronde;
                 let deler = data.deler;
                 let zetterDropdown = document.getElementById("zetter");
-                let teamgenotenDropdown = document.getElementById("teamgenoten");
 
                 document.getElementById("ronde").innerText = ronde;
                 document.getElementById("gever").innerText = namen["Speler " + deler];
@@ -133,7 +132,6 @@
 
                 // ✅ Fix: Vul de dropdowns correct
                 zetterDropdown.innerHTML = "";
-                teamgenotenDropdown.innerHTML = "";
 
                 spelerKeys.forEach(speler => {
                     let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
@@ -149,13 +147,13 @@
             let zetter = document.getElementById("zetter").value;
             let teamgenotenDropdown = document.getElementById("teamgenoten");
 
+            teamgenotenDropdown.innerHTML = "";
+
             fetch('/get_scores')
             .then(response => response.json())
             .then(data => {
                 let namen = data.namen;
                 let spelerKeys = Object.keys(namen);
-
-                teamgenotenDropdown.innerHTML = "";
 
                 spelerKeys.forEach(speler => {
                     let spelerNummer = speler.replace("Speler ", "");
