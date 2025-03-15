@@ -109,7 +109,12 @@ def bereken():
             scores["scores"][speler] -= punten
         scores["scores"][f"Speler {zetter}"] += punten * 3
 
-    scores["historiek"].append(f"Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
+    teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
+
+scores["historiek"].append(
+    f"Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
+    f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
+)
 
     scores["deler"] = (scores.get("deler", 1) % 4) + 1
     save_scores(scores)
