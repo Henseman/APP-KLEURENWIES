@@ -164,13 +164,17 @@ def update_namen():
     global scores
     data = request.json
 
+    # ✅ Zorg dat de "namen" dictionary bestaat
+    if "namen" not in scores:
+        scores["namen"] = {}
+
     # ✅ Update de namen in de backend
     for i in range(1, 5):
         speler_key = f"Speler {i}"
         if speler_key in data:
             scores["namen"][speler_key] = data[speler_key]
 
+    # ✅ Sla de namen correct op
     save_scores(scores)
 
     return jsonify({"message": "Namen bijgewerkt!", "namen": scores["namen"]})
-    })
