@@ -98,11 +98,12 @@ def bereken():
         zetter = data.get("zetter")
         teamgenoten = data.get("teamgenoten", [])
 
-        if contract not in punten_tabel:
-            return jsonify({"error": "Ongeldig contract!"}), 400
+        print(f"[DEBUG] Ontvangen data: {data}")  # ✅ Debug om input te controleren
+
+        if contract not in punten_tabel or not zetter:
+            return jsonify({"error": "Ongeldig contract of zetter ontbreekt!"}), 400
 
         info = punten_tabel[contract]
-
         if not info["team"]:
             teamgenoten = []
 
@@ -115,8 +116,8 @@ def bereken():
         if str(zetter) in teamgenoten:
             return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
 
+        # ✅ Berekening van punten
         punten = info["basispunten"] if slagen >= info["minimum_slagen"] else info["verliezen"]
-
         tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
         if info["team"]:
@@ -129,21 +130,25 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
+        # ✅ Historiek bijwerken
+        teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
         scores["historiek"].append(
-            f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {zetter}', 'Onbekend')}, "
-            f"Punten: {punten}"
+            f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
+            f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
         )
 
+        # ✅ Ronde en deler updaten
         scores["ronde"] += 1
         scores["deler"] = (scores["deler"] % 4) + 1
 
         save_scores(scores)
 
+        print(f"[DEBUG] Opgeslagen scores: {scores}")  # ✅ Debug om opslag te checken
+
         return jsonify(scores)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 # **🔴 API: Reset scores**
 @app.route('/reset', methods=['POST'])
 def reset():
