@@ -86,9 +86,62 @@
     </select>
     <br>
 
+    function updateDropdowns() {
+    fetch('/get_scores')
+    .then(response => response.json())
+    .then(data => {
+        let namen = data.namen;
+        let ronde = data.ronde;
+        let deler = data.deler;
+        let zetterDropdown = document.getElementById("zetter");
+
+        document.getElementById("ronde").innerText = ronde;
+        document.getElementById("gever").innerText = namen["Speler " + deler];
+
+        zetterDropdown.innerHTML = "";
+
+        Object.keys(namen).forEach(speler => {
+            let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
+            zetterDropdown.add(optieZetter);
+        });
+
     <h3>Wie zet?</h3>
     <select id="zetter" onchange="updateTeamgenoten()"></select>
     <br>
+
+    function controleerContract() {
+    let contract = document.getElementById("contract").value;
+    let teamDropdown = document.getElementById("teamgenoten");
+
+    teamDropdown.innerHTML = ""; // ✅ Leegmaken om oude selecties te verwijderen
+    teamDropdown.selectedIndex = -1; // ✅ Wis de selectie
+
+    if (contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo")) {
+        teamDropdown.disabled = true;
+    } else {
+        teamDropdown.disabled = false;
+        updateTeamgenoten();
+    }
+}
+
+    function updateTeamgenoten() {
+    let zetter = document.getElementById("zetter").value;
+    let teamgenotenDropdown = document.getElementById("teamgenoten");
+    teamgenotenDropdown.innerHTML = ""; // ✅ Voorkomt dubbele namen
+
+    fetch('/get_scores')
+    .then(response => response.json())
+    .then(data => {
+        let namen = data.namen;
+        Object.keys(namen).forEach(speler => {
+            let spelerNummer = speler.replace("Speler ", "");
+            if (spelerNummer !== zetter) {
+                let optie = new Option(namen[speler], spelerNummer);
+                teamgenotenDropdown.add(optie);
+            }
+        });
+    });
+}
 
     <h3>Wie speelt mee?</h3>
     <select id="teamgenoten" multiple></select>
