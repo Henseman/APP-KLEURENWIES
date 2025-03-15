@@ -21,14 +21,6 @@ punten_tabel = {
     "Solo 8": {"basispunten": 7, "verliezen": -8, "overslag": 1, "minimum_slagen": 8, "team": False},
     "Piccolo": {"basispunten": 8, "verliezen": -8, "overslag": 0, "minimum_slagen": 1, "max_slagen": 1, "team": False},
     "Samen 13": {"basispunten": 30, "verliezen": -26, "overslag": 0, "minimum_slagen": 13, "team": True},
-    "Solo 9": {"basispunten": 10, "verliezen": -10, "overslag": 5, "minimum_slagen": 9, "team": False},
-    "Troel 8": {"basispunten": 16, "verliezen": -16, "overslag": 0, "minimum_slagen": 8, "team": True},
-    "Miserie": {"basispunten": 12, "verliezen": -12, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Solo 10": {"basispunten": 15, "verliezen": -15, "overslag": 0, "minimum_slagen": 10, "team": False},
-    "Solo 11": {"basispunten": 20, "verliezen": -20, "overslag": 0, "minimum_slagen": 11, "team": False},
-    "Open Miserie": {"basispunten": 24, "verliezen": -24, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Solo 12": {"basispunten": 30, "verliezen": -30, "overslag": 0, "minimum_slagen": 9, "team": False},
-    "Solo Slim 13": {"basispunten": 60, "verliezen": -60, "overslag": 0, "minimum_slagen": 13, "team": False},
 }
 
 # Scores laden
@@ -42,7 +34,7 @@ def load_scores():
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
             "historiek": [],
             "deler": 1,
-            "ronde": 1
+            "ronde": 1  # ✅ Voeg de ronde-teller toe
         }
 
 # Scores opslaan
@@ -55,7 +47,12 @@ scores = load_scores()
 
 @app.route('/')
 def index():
-    return render_template("index.html", namen=scores["namen"], ronde=scores["ronde"], deler=scores["deler"])
+    return render_template("index.html", 
+                           namen=scores["namen"], 
+                           ronde=scores.get("ronde", 1), 
+                           deler=scores.get("deler", 1),
+                           scores=scores["scores"],
+                           historiek=scores["historiek"])
 
 @app.route('/bereken', methods=['POST'])
 def bereken():
@@ -68,24 +65,26 @@ def bereken():
 
     info = punten_tabel.get(contract, {})
 
+    # ✅ **Automatisch teamgenoten leegmaken als het een solo-spel is**
     if not info.get("team"):
         teamgenoten = []
 
+    # ✅ **Controle: Als een teamspel is gekozen, moet er een teamgenoot aangeduid worden**
     if info.get("team") and len(teamgenoten) == 0:
         return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
 
+    # ✅ **Controle: Als een solo-spel is gekozen, mag je géén extra spelers aanduiden**
     if not info.get("team") and len(teamgenoten) > 0:
         return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
 
+    # ✅ **Controle: "Wie zet" mag niet in "Wie speelt mee" staan**
     if str(zetter) in teamgenoten:
         return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
 
-    if slagen >= info["minimum_slagen"]:
-        overslagen = max(0, slagen - info["minimum_slagen"])
-        punten = info["basispunten"] + (overslagen * info["overslag"])
-    else:
-        punten = info["verliezen"]
+    # ✅ **Standaardberekening**
+    punten = info["basispunten"] if slagen >= info["minimum_slagen"] else info["verliezen"]
 
+    # ✅ Scoreverdeling: team vs. solo
     tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
     if info["team"]:
@@ -98,11 +97,40 @@ def bereken():
             scores["scores"][speler] -= punten
         scores["scores"][f"Speler {zetter}"] += punten * 3
 
+    # ✅ **Historiek bijwerken**
+    teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
+    scores["historiek"].append(
+        f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
+        f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
+    )
+
+    # ✅ **Ronde en deler updaten**
     scores["ronde"] += 1
     scores["deler"] = (scores["deler"] % 4) + 1
 
     save_scores(scores)
-    return jsonify(scores)
+
+    return jsonify({
+        "punten": punten,
+        "scores": scores["scores"],
+        "historiek": scores["historiek"],
+        "namen": scores["namen"],
+        "deler": scores["deler"],
+        "ronde": scores["ronde"]
+    })
+    
+@app.route('/reset', methods=['POST'])
+def reset():
+    global scores
+    scores = {
+        "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
+        "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
+        "historiek": [],
+        "deler": 1,
+        "ronde": 1  # ✅ Reset "ronde" naar 1
+    }
+    save_scores(scores)
+    return jsonify({"message": "Scores en historiek gereset!"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
