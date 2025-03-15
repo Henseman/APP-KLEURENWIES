@@ -135,18 +135,24 @@
             let ronde = data.ronde;
             let deler = data.deler;
             let zetterDropdown = document.getElementById("zetter");
+            let teamgenotenDropdown = document.getElementById("teamgenoten");
 
             document.getElementById("ronde").innerText = ronde;
             document.getElementById("gever").innerText = namen["Speler " + deler];
 
+            // Leegmaken en opnieuw vullen van de dropdowns
             zetterDropdown.innerHTML = "";
+            teamgenotenDropdown.innerHTML = "";
 
             Object.keys(namen).forEach(speler => {
-                let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
+                let spelerNummer = speler.replace("Speler ", "");
+                
+                // Optie toevoegen voor "Wie zet?"
+                let optieZetter = new Option(namen[speler], spelerNummer);
                 zetterDropdown.add(optieZetter);
             });
 
-            updateTeamgenoten();
+            updateTeamgenoten(); // Zorg dat "Wie speelt mee" ook correct wordt gevuld
         })
         .catch(error => console.error("Fout bij ophalen van scores:", error));
     }
@@ -156,28 +162,25 @@
         let contract = document.getElementById("contract").value;
         let teamgenotenDropdown = document.getElementById("teamgenoten");
 
-        teamgenotenDropdown.innerHTML = ""; // Reset dropdown
+        teamgenotenDropdown.innerHTML = ""; // Leegmaken dropdown
+
+        let isTeamSpel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
+
+        if (!isTeamSpel) {
+            teamgenotenDropdown.disabled = true;
+            return;
+        }
+
+        teamgenotenDropdown.disabled = false;
 
         fetch('/get_scores')
         .then(response => response.json())
         .then(data => {
             let namen = data.namen;
 
-            // Bepaal of het een **solo- of teamspel** is
-            let isTeamSpel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
-
-            // **Dropdown "Wie speelt mee" uitschakelen voor solo/miserie**
-            if (!isTeamSpel) {
-                teamgenotenDropdown.disabled = true;
-                return;
-            }
-
-            teamgenotenDropdown.disabled = false;
-
-            // **Teamgenotenlijst vullen met spelers, behalve de zetter**
             Object.keys(namen).forEach(speler => {
                 let spelerNummer = speler.replace("Speler ", "");
-                if (spelerNummer !== zetter) {  // Zetter mag niet in team staan
+                if (spelerNummer !== zetter) {  // **Filter de zetter uit de teamgenoten**
                     let optie = new Option(namen[speler], spelerNummer);
                     teamgenotenDropdown.add(optie);
                 }
@@ -187,8 +190,11 @@
     }
 
     function controleerContract() {
-        updateTeamgenoten(); // Zorg dat dropdown correct wordt aangepast
+        updateTeamgenoten();
     }
+
+    window.onload = updateDropdowns;
+</script>
 
     function berekenScore() {
         let contract = document.getElementById("contract").value;
