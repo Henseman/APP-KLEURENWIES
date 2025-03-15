@@ -86,20 +86,47 @@
 
     <h3>Wie zet?</h3>
 <select id="zetter">
-    <option value="1">{{ namen['Speler 1'] }}</option>
-    <option value="2">{{ namen['Speler 2'] }}</option>
-    <option value="3">{{ namen['Speler 3'] }}</option>
-    <option value="4">{{ namen['Speler 4'] }}</option>
+    <option value="1">Speler 1</option>
+    <option value="2">Speler 2</option>
+    <option value="3">Speler 3</option>
+    <option value="4">Speler 4</option>
 </select>
 <br>
 
 <h3>Wie speelt mee?</h3>
 <select id="teamgenoten" multiple>
-    <option value="1">{{ namen['Speler 1'] }}</option>
-    <option value="2">{{ namen['Speler 2'] }}</option>
-    <option value="3">{{ namen['Speler 3'] }}</option>
-    <option value="4">{{ namen['Speler 4'] }}</option>
+    <option value="1">Speler 1</option>
+    <option value="2">Speler 2</option>
+    <option value="3">Speler 3</option>
+    <option value="4">Speler 4</option>
 </select>
+
+<script>
+    function updateDropdowns() {
+        fetch('/get_scores')
+        .then(response => response.json())
+        .then(data => {
+            let namen = data.namen;
+
+            document.getElementById("zetter").innerHTML = `
+                <option value="1">${namen["Speler 1"]}</option>
+                <option value="2">${namen["Speler 2"]}</option>
+                <option value="3">${namen["Speler 3"]}</option>
+                <option value="4">${namen["Speler 4"]}</option>
+            `;
+
+            document.getElementById("teamgenoten").innerHTML = `
+                <option value="1">${namen["Speler 1"]}</option>
+                <option value="2">${namen["Speler 2"]}</option>
+                <option value="3">${namen["Speler 3"]}</option>
+                <option value="4">${namen["Speler 4"]}</option>
+            `;
+        });
+    }
+
+    // Roep de functie aan zodra de pagina geladen is
+    window.onload = updateDropdowns;
+</script>
     <br>
 
     <label for="slagen">Behaalde slagen:</label>
