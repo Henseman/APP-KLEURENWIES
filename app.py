@@ -84,8 +84,10 @@ def bereken():
         zetter = data.get("zetter")
         teamgenoten = data.get("teamgenoten", [])
 
+        print(f"[DEBUG] Ontvangen data: {data}")  # ✅ Debug om input te controleren
+
         if contract not in punten_tabel or not zetter:
-            return jsonify({"error": "Ongeldige invoer!"}), 400
+            return jsonify({"error": "Ongeldig contract of zetter ontbreekt!"}), 400
 
         info = punten_tabel[contract]
         if not info["team"]:
@@ -114,6 +116,18 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
+              scores["historiek"].append(f"Ronde {scores['ronde']}: {contract}, Zetter: {zetter}, Punten: {punten}")
+
+        scores["ronde"] += 1
+        scores["deler"] = (scores["deler"] % 4) + 1
+
+        save_scores(scores)
+        print(f"[DEBUG] Opgeslagen scores: {scores}")  # ✅ Debug om opslag te checken
+
+        return jsonify(scores)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
         scores["historiek"].append(f"Ronde {scores['ronde']}: {contract}, Zetter: {zetter}, Punten: {punten}")
 
         scores["ronde"] += 1
