@@ -179,17 +179,14 @@
         body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
     })
     .then(response => response.json())
-    .then(data => {
-        console.log("[DEBUG] Antwoord van /bereken:", data);
-
-        if (data.error) {
-            alert("Fout: " + data.error);
-        } else {
-            updateScores(data.scores);
-            updateHistoriek(data.historiek);
-        }
-    })
-    .catch(error => console.error("[ERROR] Fout bij berekenen van score:", error));
+.then(data => {
+    console.log("[DEBUG] Nieuwe scores:", data);
+    updateScores(data.scores);  // ✅ Update de scores in de tabel
+    updateHistoriek(data.historiek);  // ✅ Update de historiek
+    document.getElementById("ronde").innerText = data.ronde;  // ✅ Ronde updaten
+    document.getElementById("gever").innerText = data.namen["Speler " + data.deler];  // ✅ Nieuwe gever tonen
+})
+.catch(error => console.error("Fout bij berekenen van score:", error));
 }
 
 function updateScores(scores) {
