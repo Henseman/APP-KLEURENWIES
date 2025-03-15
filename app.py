@@ -66,11 +66,15 @@ def bereken():
 
     info = punten_tabel.get(contract, {})
 
-    # ✅ **Controle: Als een teamspel is gekozen, moet er een teamgenoot aangeduid worden!**
+    # ✅ **Automatisch teamgenoten leegmaken als het een solo-spel is**
+    if not info.get("team"):
+        teamgenoten = []  # Leegmaken van teamgenoten als het een solo-contract is
+
+    # ✅ **Controle: Als een teamspel is gekozen, moet er een teamgenoot aangeduid worden**
     if info.get("team") and len(teamgenoten) == 0:
         return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
 
-    # ✅ **Controle: Als een solo-spel is gekozen, mogen er geen extra spelers zijn**
+    # ✅ **Controle: Als een solo-spel is gekozen, mag je géén extra spelers aanduiden**
     if not info.get("team") and len(teamgenoten) > 0:
         return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
 
@@ -106,6 +110,7 @@ def bereken():
     save_scores(scores)
 
     return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
+    
 @app.route('/update_score', methods=['POST'])
 def update_score():
     global scores
