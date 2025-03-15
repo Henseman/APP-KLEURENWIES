@@ -86,13 +86,30 @@ def bereken():
             punten = info["basispunten"] + (overslagen * info["overslag"])
         else:
             punten = info["verliezen"]
+
     else:
         punten = 0  # Fallback als contract niet gevonden wordt
 
-    scores["historiek"].append(f"Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
-    scores["deler"] = (scores["deler"] % 4) + 1
+    # ✅ Scoreverwerking per speler
+    tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
+    if not info["team"]:
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
+        scores["scores"][f"Speler {zetter}"] += punten * 3
+    else:
+        for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
+            scores["scores"][speler] += punten
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
+
+    scores["historiek"].append(f"Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
+
+    scores["deler"] = (scores.get("deler", 1) % 4) + 1
+
+    print("DEBUG: Scores na berekening:", scores)  # ✅ Controle of scores correct wijzigen
     save_scores(scores)
+
     return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
 
 @app.route('/update_score', methods=['POST'])
