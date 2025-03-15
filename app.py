@@ -137,9 +137,11 @@ def bereken():
             f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
         )
 
-        # ✅ Ronde en deler updaten
-        scores["ronde"] += 1
-        scores["deler"] = (scores["deler"] % 4) + 1
+# ✅ Update ronde en deler na elke scoreberekening
+scores["ronde"] += 1
+scores["deler"] = (scores["deler"] % 4) + 1  # Deler schuift door naar de volgende speler
+
+save_scores(scores)  # Opslaan van de nieuwe waarden
 
         save_scores(scores)
 
