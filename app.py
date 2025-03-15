@@ -158,4 +158,19 @@ def get_scores():
         }),
         "historiek": scores.get("historiek", []),
         "deler": scores.get("deler", 1)
+
+@app.route('/update_namen', methods=['POST'])
+def update_namen():
+    global scores
+    data = request.json
+
+    # ✅ Update de namen in de backend
+    for i in range(1, 5):
+        speler_key = f"Speler {i}"
+        if speler_key in data:
+            scores["namen"][speler_key] = data[speler_key]
+
+    save_scores(scores)
+
+    return jsonify({"message": "Namen bijgewerkt!", "namen": scores["namen"]})
     })
