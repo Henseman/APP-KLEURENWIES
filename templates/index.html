@@ -216,7 +216,25 @@ function updateNamen() {
     })
     .catch(error => console.error("Fout bij berekenen van score:", error));
 }
+function updateScores(scores) {
+    console.log("[DEBUG] Geüpdatete scores:", scores);
 
+    document.getElementById("score1").innerText = scores["Speler 1"];
+    document.getElementById("score2").innerText = scores["Speler 2"];
+    document.getElementById("score3").innerText = scores["Speler 3"];
+    document.getElementById("score4").innerText = scores["Speler 4"];
+}
+    function updateHistoriek(historiek) {
+    let historiekDiv = document.getElementById("historiek");
+    historiekDiv.innerHTML = "";  // Leegmaken om dubbele invoer te voorkomen
+
+    historiek.forEach(entry => {
+        let p = document.createElement("p");
+        p.innerText = entry;
+        historiekDiv.appendChild(p);
+    });
+}    
+        
         function resetScores() {
             fetch('/reset', { method: 'POST' })
             .then(() => {
