@@ -21,17 +21,9 @@ punten_tabel = {
     "Solo 8": {"basispunten": 7, "verliezen": -8, "overslag": 1, "minimum_slagen": 8, "team": False},
     "Piccolo": {"basispunten": 8, "verliezen": -8, "overslag": 0, "minimum_slagen": 1, "max_slagen": 1, "team": False},
     "Samen 13": {"basispunten": 30, "verliezen": -26, "overslag": 0, "minimum_slagen": 13, "team": True},
-    "Solo 9": {"basispunten": 10, "verliezen": -10, "overslag": 5, "minimum_slagen": 9, "team": False},
-    "Troel 8": {"basispunten": 16, "verliezen": -16, "overslag": 0, "minimum_slagen": 8, "team": True},
-    "Miserie": {"basispunten": 12, "verliezen": -12, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Solo 10": {"basispunten": 15, "verliezen": -15, "overslag": 0, "minimum_slagen": 10, "team": False},
-    "Solo 11": {"basispunten": 20, "verliezen": -20, "overslag": 0, "minimum_slagen": 11, "team": False},
-    "Open Miserie": {"basispunten": 24, "verliezen": -24, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Solo 12": {"basispunten": 30, "verliezen": -30, "overslag": 0, "minimum_slagen": 9, "team": False},
-    "Solo Slim 13": {"basispunten": 60, "verliezen": -60, "overslag": 0, "minimum_slagen": 13, "team": False},
-    }
+}
 
-# **🟢 JSON-bestand inladen of aanmaken**
+# Scores laden
 def load_scores():
     if not os.path.exists(SCORES_FILE):
         save_scores({
@@ -53,12 +45,12 @@ def load_scores():
             "ronde": 1
         }
 
-# **🔵 JSON opslaan**
+# Scores opslaan
 def save_scores(data):
     with open(SCORES_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# **🟠 Laad bestaande scores**
+# Laad bestaande scores
 scores = load_scores()
 
 @app.route('/')
@@ -70,24 +62,6 @@ def index():
                            scores=scores["scores"],
                            historiek=scores["historiek"])
 
-# **🟢 API: Scores ophalen**
-@app.route('/get_scores')
-def get_scores():
-    return jsonify(scores)
-
-# **🟢 API: Namen updaten**
-@app.route('/update_namen', methods=['POST'])
-def update_namen():
-    global scores
-    data = request.json
-    if not data:
-        return jsonify({"error": "Geen namen ontvangen!"}), 400
-
-    scores["namen"] = data
-    save_scores(scores)
-    return jsonify({"message": "Namen geüpdatet!", "namen": scores["namen"]})
-
-# **🔵 API: Score berekenen**
 @app.route('/bereken', methods=['POST'])
 def bereken():
     global scores
@@ -98,12 +72,11 @@ def bereken():
         zetter = data.get("zetter")
         teamgenoten = data.get("teamgenoten", [])
 
-        print(f"[DEBUG] Ontvangen data: {data}")  # ✅ Debug om input te controleren
-
-        if contract not in punten_tabel or not zetter:
-            return jsonify({"error": "Ongeldig contract of zetter ontbreekt!"}), 400
+        if contract not in punten_tabel:
+            return jsonify({"error": "Ongeldig contract!"}), 400
 
         info = punten_tabel[contract]
+
         if not info["team"]:
             teamgenoten = []
 
@@ -130,21 +103,11 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
- scores["historiek"].append(
-        f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {zetter}', 'Onbekend')}, "
-        f"Punten: {punten}"
-
-        scores["ronde"] += 1
-        scores["deler"] = (scores["deler"] % 4) + 1
-
-        save_scores(scores)
-        print(f"[DEBUG] Opgeslagen scores: {scores}")  # ✅ Debug om opslag te checken
-
-        return jsonify(scores)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-        scores["historiek"].append(f"Ronde {scores['ronde']}: {contract}, Zetter: {zetter}, Punten: {punten}")
+        # ✅ Correcte historiek-opslag
+        scores["historiek"].append(
+            f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {zetter}', 'Onbekend')}, "
+            f"Punten: {punten}"
+        )
 
         scores["ronde"] += 1
         scores["deler"] = (scores["deler"] % 4) + 1
