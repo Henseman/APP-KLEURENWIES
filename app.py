@@ -137,15 +137,13 @@ def bereken():
             f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
         )
 
-# ✅ Update ronde en deler na elke scoreberekening
-scores["ronde"] += 1
-scores["deler"] = (scores["deler"] % 4) + 1  # Deler schuift door naar de volgende speler
+        # ✅ Ronde en deler updaten **(binnen try-blok!)**
+        scores["ronde"] += 1
+        scores["deler"] = (scores["deler"] % 4) + 1  # Deler schuift door naar de volgende speler
 
-save_scores(scores)  # Opslaan van de nieuwe waarden
-
+        # ✅ Opslaan en debuggen
         save_scores(scores)
-
-        print(f"[DEBUG] Opgeslagen scores: {scores}")  # ✅ Debug om opslag te checken
+        print(f"[DEBUG] Opgeslagen scores: {scores}")
 
         return jsonify(scores)
 
