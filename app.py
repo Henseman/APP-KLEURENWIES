@@ -15,7 +15,7 @@ punten_tabel = {
     "Solo 6": {"basispunten": 12, "verliezen": -15, "overslag": 1, "minimum_slagen": 6, "team": False},
     "Abondance 9": {"basispunten": 18, "verliezen": -18, "overslag": 1, "minimum_slagen": 9, "team": False},
     "Picolo": {"basispunten": 20, "verliezen": -20, "overslag": 0, "minimum_slagen": 0, "team": False},
-}
+    }
 
 # Scores laden
 def load_scores():
@@ -50,13 +50,39 @@ def bereken():
     zetter = data.get("zetter")
     teamgenoten = data.get("teamgenoten", [])
 
-    if contract in punten_tabel:
-        info = punten_tabel[contract]
-        if slagen >= info["minimum_slagen"]:
-            overslagen = max(0, slagen - info["minimum_slagen"])
-            punten = info["basispunten"] + (overslagen * info["overslag"])
-        else:
-            punten = info["verliezen"]
+   if contract in punten_tabel:
+    info = punten_tabel[contract]
+
+    # ✅ Toegevoegde code voor Kleine Miserie
+    if contract == "Kleine Miserie" and slagen > info["max_slagen"]:
+        punten = info["verliezen"]  # Speler haalt slagen → verlies
+    elif contract == "Kleine Miserie":
+        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+
+ # ✅ Toegevoegde code voor Miserie
+    if contract == "Miserie" and slagen > info["max_slagen"]:
+        punten = info["verliezen"]  # Speler haalt slagen → verlies
+    elif contract == "Miserie":
+        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+
+ # ✅ Toegevoegde code voor Open Miserie
+    if contract == "Open Miserie" and slagen > info["max_slagen"]:
+        punten = info["verliezen"]  # Speler haalt slagen → verlies
+    elif contract == "Open Miserie":
+        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+
+ # ✅ Toegevoegde code voor Piccolo
+    if contract == "Piccolo" and slagen > info["max_slagen"]:
+        punten = info["verliezen"]  # Speler haalt slagen → verlies
+    elif contract == "Piccolo":
+        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+       
+    # ✅ Standaardberekening voor andere contracten
+    elif slagen >= info["minimum_slagen"]:
+        overslagen = max(0, slagen - info["minimum_slagen"])
+        punten = info["basispunten"] + (overslagen * info["overslag"])
+    else:
+        punten = info["verliezen"]
     else:
         punten = 0
 
