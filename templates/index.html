@@ -190,20 +190,32 @@ function updateNamen() {
             }
         }
 
-        function berekenScore() {
-            let contract = document.getElementById("contract").value;
-            let slagen = parseInt(document.getElementById("slagen").value);
-            let zetter = document.getElementById("zetter").value;
-            let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
+       function berekenScore() {
+    let contract = document.getElementById("contract").value;
+    let slagen = parseInt(document.getElementById("slagen").value);
+    let zetter = document.getElementById("zetter").value;
+    let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
 
-            fetch('/bereken', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
-            })
-            .then(() => updateDropdowns())
-            .catch(error => console.error("Fout bij berekenen van score:", error));
+    console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
+
+    fetch('/bereken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("[DEBUG] Antwoord van /bereken:", data);
+
+        if (data.error) {
+            alert("Fout: " + data.error);
+        } else {
+            updateScores(data.scores);
+            updateHistoriek(data.historiek);
         }
+    })
+    .catch(error => console.error("Fout bij berekenen van score:", error));
+}
 
         function resetScores() {
             fetch('/reset', { method: 'POST' })
