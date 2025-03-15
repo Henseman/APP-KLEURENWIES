@@ -166,24 +166,51 @@
         }
 
         function berekenScore() {
-            let contract = document.getElementById("contract").value;
-            let slagen = parseInt(document.getElementById("slagen").value);
-            let zetter = document.getElementById("zetter").value;
-            let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
+    let contract = document.getElementById("contract").value;
+    let slagen = parseInt(document.getElementById("slagen").value);
+    let zetter = document.getElementById("zetter").value;
+    let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
 
-            console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
+    console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
 
-            fetch('/bereken', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("[DEBUG] Antwoord van /bereken:", data);
-            })
-            .catch(error => console.error("[ERROR] Fout bij berekenen van score:", error));
+    fetch('/bereken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("[DEBUG] Antwoord van /bereken:", data);
+
+        if (data.error) {
+            alert("Fout: " + data.error);
+        } else {
+            updateScores(data.scores);
+            updateHistoriek(data.historiek);
         }
+    })
+    .catch(error => console.error("[ERROR] Fout bij berekenen van score:", error));
+}
+
+function updateScores(scores) {
+    console.log("[DEBUG] Geüpdatete scores:", scores);
+
+    document.getElementById("score1").innerText = scores["Speler 1"];
+    document.getElementById("score2").innerText = scores["Speler 2"];
+    document.getElementById("score3").innerText = scores["Speler 3"];
+    document.getElementById("score4").innerText = scores["Speler 4"];
+}
+
+function updateHistoriek(historiek) {
+    let historiekDiv = document.getElementById("historiek");
+    historiekDiv.innerHTML = "";  // Leegmaken om dubbele invoer te voorkomen
+
+    historiek.forEach(entry => {
+        let p = document.createElement("p");
+        p.innerText = entry;
+        historiekDiv.appendChild(p);
+    });
+}
 
         function resetScores() {
             fetch('/reset', { method: 'POST' })
