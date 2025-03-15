@@ -64,54 +64,48 @@ def bereken():
     zetter = data.get("zetter")
     teamgenoten = data.get("teamgenoten", [])
 
-    if not punten_tabel[contract]["team"]:
-        teamgenoten = []
+    info = punten_tabel.get(contract, {})
 
-    if contract in punten_tabel:
-        info = punten_tabel[contract]
+    # ✅ **Controle: Als een teamspel is gekozen, moet er een teamgenoot aangeduid worden!**
+    if info.get("team") and len(teamgenoten) == 0:
+        return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
 
-        # ✅ Als een speler 13 slagen haalt, is de score altijd 30 punten
-        if slagen == 13:
-            punten = 30
+    # ✅ **Controle: Als een solo-spel is gekozen, mogen er geen extra spelers zijn**
+    if not info.get("team") and len(teamgenoten) > 0:
+        return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
 
-        # ✅ Speciale regel voor Miserie
-        elif contract == "Miserie" and slagen > info["max_slagen"]:
-            punten = info["verliezen"]  # Speler haalt slagen → verlies
-        elif contract == "Miserie":
-            punten = info["basispunten"]  # Speler haalt geen slagen → winst
-
-        # ✅ Standaardberekening voor andere contracten
-        elif slagen >= info["minimum_slagen"]:
-            overslagen = max(0, slagen - info["minimum_slagen"])
-            punten = info["basispunten"] + (overslagen * info["overslag"])
-        else:
-            punten = info["verliezen"]
-
+    # ✅ **Standaardberekening**
+    if slagen == 13:
+        punten = 30
+    elif contract == "Miserie" and slagen > info.get("max_slagen", 0):
+        punten = info["verliezen"]
+    elif contract == "Miserie":
+        punten = info["basispunten"]
+    elif slagen >= info["minimum_slagen"]:
+        overslagen = max(0, slagen - info["minimum_slagen"])
+        punten = info["basispunten"] + (overslagen * info["overslag"])
     else:
-        punten = 0  # Fallback als contract niet gevonden wordt
+        punten = info["verliezen"]
 
-    # ✅ Scoreverwerking per speler
+    # ✅ Scoreverdeling: team vs. solo
     tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
-    if not info["team"]:
-        for speler in tegenstanders:
-            scores["scores"][speler] -= punten
-        scores["scores"][f"Speler {zetter}"] += punten * 3
-    else:
+    if info["team"]:
         for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
             scores["scores"][speler] += punten
         for speler in tegenstanders:
             scores["scores"][speler] -= punten
+    else:
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
+        scores["scores"][f"Speler {zetter}"] += punten * 3
 
     scores["historiek"].append(f"Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
 
     scores["deler"] = (scores.get("deler", 1) % 4) + 1
-
-    print("DEBUG: Scores na berekening:", scores)  # ✅ Controle of scores correct wijzigen
     save_scores(scores)
 
     return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
-
 @app.route('/update_score', methods=['POST'])
 def update_score():
     global scores
