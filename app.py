@@ -42,7 +42,7 @@ def load_scores():
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
             "historiek": [],
             "deler": 1,
-            "ronde": 1  # ✅ Toegevoegd: spelnummer bijhouden
+            "ronde": 1  # ✅ Nieuw toegevoegd: Ronde teller
         }
 
 # Scores opslaan
@@ -80,13 +80,7 @@ def bereken():
     if str(zetter) in teamgenoten:
         return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
 
-    if slagen == 13:
-        punten = 30
-    elif contract == "Miserie" and slagen > info.get("max_slagen", 0):
-        punten = info["verliezen"]
-    elif contract == "Miserie":
-        punten = info["basispunten"]
-    elif slagen >= info["minimum_slagen"]:
+    if slagen >= info["minimum_slagen"]:
         overslagen = max(0, slagen - info["minimum_slagen"])
         punten = info["basispunten"] + (overslagen * info["overslag"])
     else:
@@ -104,14 +98,11 @@ def bereken():
             scores["scores"][speler] -= punten
         scores["scores"][f"Speler {zetter}"] += punten * 3
 
-    scores["historiek"].append(f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
-
-    scores["ronde"] += 1  # ✅ Spelnummer verhogen
+    scores["ronde"] += 1  # ✅ Verhoog de ronde
     scores["deler"] = (scores["deler"] % 4) + 1  # ✅ Volgende deler
 
     save_scores(scores)
-
-    return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"], "ronde": scores["ronde"]})
+    return jsonify(scores)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
