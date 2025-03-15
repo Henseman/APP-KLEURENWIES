@@ -111,9 +111,9 @@ def bereken():
 
 teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
 
-    scores["historiek"].append(
-        f"Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
-        f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
+scores["historiek"].append(
+    f"Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
+    f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
     )
     # ✅ Correcte plaats in je code!
     scores["deler"] = (scores.get("deler", 1) % 4) + 1
