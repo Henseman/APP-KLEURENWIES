@@ -87,7 +87,7 @@
     <br>
 
     <h3>Wie zet?</h3>
-    <select id="zetter"></select>
+    <select id="zetter" onchange="updateTeamgenoten()"></select>
     <br>
 
     <h3>Wie speelt mee?</h3>
@@ -131,19 +131,40 @@
 
                 let spelerKeys = Object.keys(namen);
 
-                // ✅ Fix: Zorg dat dropdowns gevuld worden
+                // ✅ Fix: Vul de dropdowns correct
                 zetterDropdown.innerHTML = "";
                 teamgenotenDropdown.innerHTML = "";
 
                 spelerKeys.forEach(speler => {
                     let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
                     zetterDropdown.add(optieZetter);
-
-                    let optieTeamgenoot = new Option(namen[speler], speler.replace("Speler ", ""));
-                    teamgenotenDropdown.add(optieTeamgenoot);
                 });
+
+                updateTeamgenoten();
             })
             .catch(error => console.error("Fout bij ophalen van namen:", error));
+        }
+
+        function updateTeamgenoten() {
+            let zetter = document.getElementById("zetter").value;
+            let teamgenotenDropdown = document.getElementById("teamgenoten");
+
+            fetch('/get_scores')
+            .then(response => response.json())
+            .then(data => {
+                let namen = data.namen;
+                let spelerKeys = Object.keys(namen);
+
+                teamgenotenDropdown.innerHTML = "";
+
+                spelerKeys.forEach(speler => {
+                    let spelerNummer = speler.replace("Speler ", "");
+                    if (spelerNummer !== zetter) {
+                        let optie = new Option(namen[speler], spelerNummer);
+                        teamgenotenDropdown.add(optie);
+                    }
+                });
+            });
         }
 
         function updateNamen() {
