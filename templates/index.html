@@ -62,7 +62,7 @@
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
 
     <h3>Kies een contract:</h3>
-    <select id="contract">
+    <select id="contract" onchange="controleerContract()">
         <option value="Samen 8">Samen 8</option>
         <option value="Solo 5">Solo 5</option>
         <option value="Samen 9">Samen 9</option>
@@ -128,34 +128,27 @@
                 document.getElementById("ronde").innerText = ronde;
                 document.getElementById("gever").innerText = namen["Speler " + deler];
 
-                let spelerKeys = Object.keys(namen);
-
-                // ✅ Fix: Vul de dropdowns correct
                 zetterDropdown.innerHTML = "";
 
-                spelerKeys.forEach(speler => {
+                Object.keys(namen).forEach(speler => {
                     let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
                     zetterDropdown.add(optieZetter);
                 });
 
                 updateTeamgenoten();
-            })
-            .catch(error => console.error("Fout bij ophalen van namen:", error));
+            });
         }
 
         function updateTeamgenoten() {
             let zetter = document.getElementById("zetter").value;
             let teamgenotenDropdown = document.getElementById("teamgenoten");
-
             teamgenotenDropdown.innerHTML = "";
 
             fetch('/get_scores')
             .then(response => response.json())
             .then(data => {
                 let namen = data.namen;
-                let spelerKeys = Object.keys(namen);
-
-                spelerKeys.forEach(speler => {
+                Object.keys(namen).forEach(speler => {
                     let spelerNummer = speler.replace("Speler ", "");
                     if (spelerNummer !== zetter) {
                         let optie = new Option(namen[speler], spelerNummer);
@@ -165,20 +158,15 @@
             });
         }
 
-        function updateNamen() {
-            let nieuweNamen = {
-                "Speler 1": document.getElementById("speler1").value,
-                "Speler 2": document.getElementById("speler2").value,
-                "Speler 3": document.getElementById("speler3").value,
-                "Speler 4": document.getElementById("speler4").value
-            };
+        function controleerContract() {
+            let contract = document.getElementById("contract").value;
+            let teamDropdown = document.getElementById("teamgenoten");
 
-            fetch('/update_namen', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(nieuweNamen)
-            })
-            .then(() => updateDropdowns());
+            if (contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo")) {
+                teamDropdown.disabled = true;
+            } else {
+                teamDropdown.disabled = false;
+            }
         }
 
         function berekenScore() {
