@@ -140,19 +140,18 @@
             document.getElementById("ronde").innerText = ronde;
             document.getElementById("gever").innerText = namen["Speler " + deler];
 
-            // Leegmaken en opnieuw vullen van de dropdowns
+            // 🔹 Leegmaken en opnieuw vullen van de dropdowns
             zetterDropdown.innerHTML = "";
             teamgenotenDropdown.innerHTML = "";
 
+            // 🔹 Alle spelers toevoegen aan "Wie zet?"
             Object.keys(namen).forEach(speler => {
                 let spelerNummer = speler.replace("Speler ", "");
-                
-                // Optie toevoegen voor "Wie zet?"
                 let optieZetter = new Option(namen[speler], spelerNummer);
                 zetterDropdown.add(optieZetter);
             });
 
-            updateTeamgenoten(); // Zorg dat "Wie speelt mee" ook correct wordt gevuld
+            updateTeamgenoten(); // Zorgt dat "Wie speelt mee?" ook correct wordt gevuld
         })
         .catch(error => console.error("Fout bij ophalen van scores:", error));
     }
@@ -162,7 +161,7 @@
         let contract = document.getElementById("contract").value;
         let teamgenotenDropdown = document.getElementById("teamgenoten");
 
-        teamgenotenDropdown.innerHTML = ""; // Leegmaken dropdown
+        teamgenotenDropdown.innerHTML = ""; // 🔹 Leegmaken dropdown
 
         let isTeamSpel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
 
@@ -180,7 +179,7 @@
 
             Object.keys(namen).forEach(speler => {
                 let spelerNummer = speler.replace("Speler ", "");
-                if (spelerNummer !== zetter) {  // **Filter de zetter uit de teamgenoten**
+                if (spelerNummer !== zetter) {  
                     let optie = new Option(namen[speler], spelerNummer);
                     teamgenotenDropdown.add(optie);
                 }
@@ -189,6 +188,12 @@
         .catch(error => console.error("Fout bij ophalen van teamgenoten:", error));
     }
 
+    function controleerContract() {
+        updateTeamgenoten();
+    }
+
+    window.onload = updateDropdowns;
+</script>
     function controleerContract() {
         updateTeamgenoten();
     }
