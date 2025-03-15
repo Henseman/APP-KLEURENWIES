@@ -42,7 +42,7 @@ def load_scores():
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
             "historiek": [],
             "deler": 1,
-            "ronde": 1  # ✅ Nieuw toegevoegd: Ronde teller
+            "ronde": 1
         }
 
 # Scores opslaan
@@ -98,8 +98,8 @@ def bereken():
             scores["scores"][speler] -= punten
         scores["scores"][f"Speler {zetter}"] += punten * 3
 
-    scores["ronde"] += 1  # ✅ Verhoog de ronde
-    scores["deler"] = (scores["deler"] % 4) + 1  # ✅ Volgende deler
+    scores["ronde"] += 1
+    scores["deler"] = (scores["deler"] % 4) + 1
 
     save_scores(scores)
     return jsonify(scores)
