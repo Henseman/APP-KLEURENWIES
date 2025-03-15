@@ -175,6 +175,20 @@
             .then(() => updateDropdowns());
         }
 
+        function berekenScore() {
+            let contract = document.getElementById("contract").value;
+            let slagen = parseInt(document.getElementById("slagen").value);
+            let zetter = document.getElementById("zetter").value;
+            let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
+
+            fetch('/bereken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+            })
+            .then(() => updateDropdowns());
+        }
+
         window.onload = updateDropdowns;
     </script>
 </body>
