@@ -108,6 +108,29 @@
     <div id="historiek"></div>
 
     <script>
+function updateNamen() {
+    let nieuweNamen = {
+        "Speler 1": document.getElementById("speler1").value || "Speler 1",
+        "Speler 2": document.getElementById("speler2").value || "Speler 2",
+        "Speler 3": document.getElementById("speler3").value || "Speler 3",
+        "Speler 4": document.getElementById("speler4").value || "Speler 4"
+    };
+
+    console.log("Nieuwe namen:", nieuweNamen);  // ✅ Debug output in console
+
+    fetch('/update_namen', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nieuweNamen)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Response van server:", data);  // ✅ Debug output
+        updateDropdowns();
+    })
+    .catch(error => console.error("Fout bij updaten van namen:", error));
+}
+        
         function updateDropdowns() {
             fetch('/get_scores')
             .then(response => response.json())
