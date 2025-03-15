@@ -40,7 +40,8 @@ def load_scores():
         return {
             "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
-            "historiek": []
+            "historiek": [],
+            "deler": 1  # ✅ Voeg de deler toe aan de standaardwaarden!
         }
 
 # Scores opslaan
