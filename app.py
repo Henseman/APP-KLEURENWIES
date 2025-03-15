@@ -139,10 +139,6 @@ def reset():
     save_scores(scores)
     return jsonify({"message": "Scores en historiek gereset!"})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
 @app.route('/get_scores', methods=['GET'])
 def get_scores():
     global scores
@@ -179,3 +175,8 @@ def update_namen():
     save_scores(scores)
 
     return jsonify({"message": "Namen bijgewerkt!", "namen": scores["namen"]})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
