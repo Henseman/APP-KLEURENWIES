@@ -64,64 +64,36 @@ def bereken():
     zetter = data.get("zetter")
     teamgenoten = data.get("teamgenoten", [])
 
-   if contract in punten_tabel:
-    info = punten_tabel[contract]
+    if not punten_tabel[contract]["team"]:
+        teamgenoten = []
 
- # ✅ Als een speler 13 slagen haalt, is de score altijd 30 punten
-    if slagen == 13:
-        punten = 30   
-        
- # ✅ Toegevoegde code voor Kleine Miserie
-    if contract == "Kleine Miserie" and slagen > info["max_slagen"]:
-        punten = info["verliezen"]  # Speler haalt slagen → verlies
-    elif contract == "Kleine Miserie":
-        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+    if contract in punten_tabel:
+        info = punten_tabel[contract]
 
- # ✅ Toegevoegde code voor Miserie
-    if contract == "Miserie" and slagen > info["max_slagen"]:
-        punten = info["verliezen"]  # Speler haalt slagen → verlies
-    elif contract == "Miserie":
-        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+        # ✅ Als een speler 13 slagen haalt, is de score altijd 30 punten
+        if slagen == 13:
+            punten = 30
 
- # ✅ Toegevoegde code voor Open Miserie
-    if contract == "Open Miserie" and slagen > info["max_slagen"]:
-        punten = info["verliezen"]  # Speler haalt slagen → verlies
-    elif contract == "Open Miserie":
-        punten = info["basispunten"]  # Speler haalt geen slagen → winst
+        # ✅ Speciale regel voor Miserie
+        elif contract == "Miserie" and slagen > info["max_slagen"]:
+            punten = info["verliezen"]  # Speler haalt slagen → verlies
+        elif contract == "Miserie":
+            punten = info["basispunten"]  # Speler haalt geen slagen → winst
 
- # ✅ Toegevoegde code voor Piccolo
-    if contract == "Piccolo" and slagen > info["max_slagen"]:
-        punten = info["verliezen"]  # Speler haalt slagen → verlies
-    elif contract == "Piccolo":
-        punten = info["basispunten"]  # Speler haalt geen slagen → winst
-       
-    # ✅ Standaardberekening voor andere contracten
-    elif slagen >= info["minimum_slagen"]:
-        overslagen = max(0, slagen - info["minimum_slagen"])
-        punten = info["basispunten"] + (overslagen * info["overslag"])
+        # ✅ Standaardberekening voor andere contracten
+        elif slagen >= info["minimum_slagen"]:
+            overslagen = max(0, slagen - info["minimum_slagen"])
+            punten = info["basispunten"] + (overslagen * info["overslag"])
+        else:
+            punten = info["verliezen"]
     else:
-        punten = info["verliezen"]
-    else:
-        punten = 0
+        punten = 0  # Fallback als contract niet gevonden wordt
 
-    tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
-
-    # ** Correctie van de puntentelling **
-    if not info["team"]:  # Solo-spellen (1 tegen 3)
-        for speler in tegenstanders:
-            scores["scores"][speler] -= punten  # 3 tegenstanders verliezen punten
-        scores["scores"][f"Speler {zetter}"] += punten * 3  # Zetter krijgt punten van alle 3 tegenstanders
-
-    else:  # Team-spellen (2 tegen 2)
-        for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
-            scores["scores"][speler] += punten
-        for speler in tegenstanders:
-            scores["scores"][speler] -= punten
-
-    scores["historiek"].append(f"Contract: {contract}, Zetter: Speler {zetter}, Punten: {punten}")
+    scores["historiek"].append(f"Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
+    scores["deler"] = (scores["deler"] % 4) + 1
 
     save_scores(scores)
-    return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"]})
+    return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
 
 @app.route('/update_score', methods=['POST'])
 def update_score():
