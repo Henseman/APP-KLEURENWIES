@@ -42,7 +42,7 @@ def load_scores():
             "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
             "historiek": [],
             "deler": 1,
-            "spel_nummer": 1
+            "ronde": 1  # ✅ Toegevoegd: spelnummer bijhouden
         }
 
 # Scores opslaan
@@ -55,7 +55,7 @@ scores = load_scores()
 
 @app.route('/')
 def index():
-    return render_template("index.html", namen=scores["namen"])
+    return render_template("index.html", namen=scores["namen"], ronde=scores["ronde"], deler=scores["deler"])
 
 @app.route('/bereken', methods=['POST'])
 def bereken():
@@ -71,55 +71,47 @@ def bereken():
     if not info.get("team"):
         teamgenoten = []
 
-    teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
+    if info.get("team") and len(teamgenoten) == 0:
+        return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
 
-    if slagen >= info["minimum_slagen"]:
+    if not info.get("team") and len(teamgenoten) > 0:
+        return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
+
+    if str(zetter) in teamgenoten:
+        return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
+
+    if slagen == 13:
+        punten = 30
+    elif contract == "Miserie" and slagen > info.get("max_slagen", 0):
+        punten = info["verliezen"]
+    elif contract == "Miserie":
+        punten = info["basispunten"]
+    elif slagen >= info["minimum_slagen"]:
         overslagen = max(0, slagen - info["minimum_slagen"])
         punten = info["basispunten"] + (overslagen * info["overslag"])
     else:
         punten = info["verliezen"]
 
-    scores["historiek"].append(
-        f"Spel {scores['spel_nummer']}: Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, "
-        f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
-    )
+    tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
-    scores["spel_nummer"] += 1
-    scores["deler"] = (scores["deler"] % 4) + 1
-    scores["deler_naam"] = scores["namen"][f"Speler {scores['deler']}"]
+    if info["team"]:
+        for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
+            scores["scores"][speler] += punten
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
+    else:
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
+        scores["scores"][f"Speler {zetter}"] += punten * 3
 
-    save_scores(scores)
-    return jsonify(scores)
+    scores["historiek"].append(f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'][f'Speler {zetter}']}, Punten: {punten}")
 
-@app.route('/reset', methods=['POST'])
-def reset():
-    global scores
-    scores = {
-        "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
-        "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
-        "historiek": [],
-        "deler": 1,
-        "spel_nummer": 1
-    }
-    save_scores(scores)
-    return jsonify({"message": "Scores en historiek gereset!"})
-
-@app.route('/get_scores', methods=['GET'])
-def get_scores():
-    global scores
-    return jsonify(scores)
-
-@app.route('/update_namen', methods=['POST'])
-def update_namen():
-    global scores
-    data = request.json
-    for i in range(1, 5):
-        speler_key = f"Speler {i}"
-        if speler_key in data:
-            scores["namen"][speler_key] = data[speler_key]
+    scores["ronde"] += 1  # ✅ Spelnummer verhogen
+    scores["deler"] = (scores["deler"] % 4) + 1  # ✅ Volgende deler
 
     save_scores(scores)
-    return jsonify({"message": "Namen bijgewerkt!", "namen": scores["namen"]})
+
+    return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"], "ronde": scores["ronde"]})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
