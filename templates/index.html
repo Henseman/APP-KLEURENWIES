@@ -135,7 +135,7 @@
                     zetterDropdown.add(optieZetter);
                 });
 
-                updateTeamgenoten();
+                updateTeamgenoten(); // ✅ Direct correct oproepen
             });
         }
 
@@ -162,10 +162,14 @@
             let contract = document.getElementById("contract").value;
             let teamDropdown = document.getElementById("teamgenoten");
 
+            teamDropdown.innerHTML = ""; // ✅ Leegmaken om oude selecties te verwijderen
+            teamDropdown.value = ""; // ✅ Zorg dat geselecteerde spelers gewist worden
+
             if (contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo")) {
                 teamDropdown.disabled = true;
             } else {
                 teamDropdown.disabled = false;
+                updateTeamgenoten();
             }
         }
 
