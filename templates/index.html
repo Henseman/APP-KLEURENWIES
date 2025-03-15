@@ -84,22 +84,12 @@
     </select>
     <br>
 
-    <h3>Wie zet?</h3>
-<select id="zetter">
-    <option value="1">Speler 1</option>
-    <option value="2">Speler 2</option>
-    <option value="3">Speler 3</option>
-    <option value="4">Speler 4</option>
-</select>
+<h3>Wie zet?</h3>
+<select id="zetter"></select>
 <br>
 
 <h3>Wie speelt mee?</h3>
-<select id="teamgenoten" multiple>
-    <option value="1">Speler 1</option>
-    <option value="2">Speler 2</option>
-    <option value="3">Speler 3</option>
-    <option value="4">Speler 4</option>
-</select>
+<select id="teamgenoten" multiple></select>
 
 <script>
     function updateDropdowns() {
@@ -107,24 +97,32 @@
         .then(response => response.json())
         .then(data => {
             let namen = data.namen;
+            let zetterDropdown = document.getElementById("zetter");
+            let teamgenotenDropdown = document.getElementById("teamgenoten");
 
-            document.getElementById("zetter").innerHTML = `
-                <option value="1">${namen["Speler 1"]}</option>
-                <option value="2">${namen["Speler 2"]}</option>
-                <option value="3">${namen["Speler 3"]}</option>
-                <option value="4">${namen["Speler 4"]}</option>
-            `;
+            // Maak dropdowns leeg
+            zetterDropdown.innerHTML = "";
+            teamgenotenDropdown.innerHTML = "";
 
-            document.getElementById("teamgenoten").innerHTML = `
-                <option value="1">${namen["Speler 1"]}</option>
-                <option value="2">${namen["Speler 2"]}</option>
-                <option value="3">${namen["Speler 3"]}</option>
-                <option value="4">${namen["Speler 4"]}</option>
-            `;
-        });
+            // Vul de dropdowns opnieuw met de juiste namen
+            for (let i = 1; i <= 4; i++) {
+                let spelerNaam = namen["Speler " + i];
+
+                let optionZetter = document.createElement("option");
+                optionZetter.value = i;
+                optionZetter.textContent = spelerNaam;
+                zetterDropdown.appendChild(optionZetter);
+
+                let optionTeamgenoot = document.createElement("option");
+                optionTeamgenoot.value = i;
+                optionTeamgenoot.textContent = spelerNaam;
+                teamgenotenDropdown.appendChild(optionTeamgenoot);
+            }
+        })
+        .catch(error => console.error("Fout bij ophalen van namen:", error));
     }
 
-    // Roep de functie aan zodra de pagina geladen is
+    // Roep updateDropdowns aan zodra de pagina geladen is
     window.onload = updateDropdowns;
 </script>
     <br>
