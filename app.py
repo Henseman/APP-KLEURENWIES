@@ -130,7 +130,7 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
-               scores["historiek"].append(
+ scores["historiek"].append(
         f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {zetter}', 'Onbekend')}, "
         f"Punten: {punten}"
 
