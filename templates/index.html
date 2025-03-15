@@ -84,6 +84,13 @@
     </select>
     <br>
 
+<h3>Spelersnamen instellen:</h3>
+<input type="text" id="speler1" value="Speler 1">
+<input type="text" id="speler2" value="Speler 2">
+<input type="text" id="speler3" value="Speler 3">
+<input type="text" id="speler4" value="Speler 4">
+<button onclick="updateNamen()">Update Namen</button>
+
 <h3>Wie zet?</h3>
 <select id="zetter"></select>
 <br>
@@ -99,6 +106,12 @@
             let namen = data.namen;
             let zetterDropdown = document.getElementById("zetter");
             let teamgenotenDropdown = document.getElementById("teamgenoten");
+
+            // Vul inputvelden met huidige namen
+            document.getElementById("speler1").value = namen["Speler 1"];
+            document.getElementById("speler2").value = namen["Speler 2"];
+            document.getElementById("speler3").value = namen["Speler 3"];
+            document.getElementById("speler4").value = namen["Speler 4"];
 
             // Maak dropdowns leeg
             zetterDropdown.innerHTML = "";
@@ -120,6 +133,27 @@
             }
         })
         .catch(error => console.error("Fout bij ophalen van namen:", error));
+    }
+
+    function updateNamen() {
+        let nieuweNamen = {
+            "Speler 1": document.getElementById("speler1").value,
+            "Speler 2": document.getElementById("speler2").value,
+            "Speler 3": document.getElementById("speler3").value,
+            "Speler 4": document.getElementById("speler4").value
+        };
+
+        fetch('/update_namen', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nieuweNamen)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Namen geüpdatet:", data.namen);
+            updateDropdowns(); // ✅ Vernieuw dropdowns met nieuwe namen
+        })
+        .catch(error => console.error("Fout bij bijwerken van namen:", error));
     }
 
     // Roep updateDropdowns aan zodra de pagina geladen is
