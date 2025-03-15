@@ -129,22 +129,17 @@
                 document.getElementById("ronde").innerText = ronde;
                 document.getElementById("gever").innerText = namen["Speler " + deler];
 
-                let spelerKeys = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
+                let spelerKeys = Object.keys(namen);
 
-                spelerKeys.forEach((speler, index) => {
-                    document.getElementById("speler" + (index + 1)).value = namen[speler];
-                    document.getElementById("naam" + (index + 1)).innerText = namen[speler];
-                });
-
-                // ✅ Oplossing voor de dropdowns
+                // ✅ Fix: Zorg dat dropdowns gevuld worden
                 zetterDropdown.innerHTML = "";
                 teamgenotenDropdown.innerHTML = "";
 
-                spelerKeys.forEach((speler, index) => {
-                    let optieZetter = new Option(namen[speler], index + 1);
+                spelerKeys.forEach(speler => {
+                    let optieZetter = new Option(namen[speler], speler.replace("Speler ", ""));
                     zetterDropdown.add(optieZetter);
 
-                    let optieTeamgenoot = new Option(namen[speler], index + 1);
+                    let optieTeamgenoot = new Option(namen[speler], speler.replace("Speler ", ""));
                     teamgenotenDropdown.add(optieTeamgenoot);
                 });
             })
