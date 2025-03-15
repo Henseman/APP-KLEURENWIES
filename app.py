@@ -4,27 +4,26 @@ import os
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# Bestandspad
+# 🟢 **Pad naar JSON-bestand**
 SCORES_FILE = "data/scores.json"
 
-# Puntentabel voor Kleurenwies
+# 🟠 **Puntentabel voor Kleurenwies**
 punten_tabel = {
-   "Samen 8": {"basispunten": 8, "verliezen": -11, "overslag": 3, "minimum_slagen": 8, "team": True},
+    "Samen 8": {"basispunten": 8, "verliezen": -11, "overslag": 3, "minimum_slagen": 8, "team": True},
     "Solo 5": {"basispunten": 3, "verliezen": -4, "overslag": 1, "minimum_slagen": 5, "team": False},
     "Samen 9": {"basispunten": 11, "verliezen": -14, "overslag": 3, "minimum_slagen": 9, "team": True},
     "Solo 6": {"basispunten": 4, "verliezen": -5, "overslag": 1, "minimum_slagen": 6, "team": False},
     "Samen 10": {"basispunten": 14, "verliezen": -17, "overslag": 3, "minimum_slagen": 10, "team": True},
     "Solo 7": {"basispunten": 5, "verliezen": -6, "overslag": 1, "minimum_slagen": 7, "team": False},
-    "Samen 11": {"basispunten": 17, "verliezen": -20, "overslag": 3, "minimum_slagen": 11, "team": True},
     "Kleine Miserie": {"basispunten": 6, "verliezen": -6, "overslag": 0, "minimum_slagen": 0, "max_slagen": 0, "team": False},
-    "Samen 12": {"basispunten": 20, "verliezen": -23, "overslag": 3, "minimum_slagen": 12, "team": True},
-    "Solo 8": {"basispunten": 7, "verliezen": -8, "overslag": 1, "minimum_slagen": 8, "team": False},
     "Piccolo": {"basispunten": 8, "verliezen": -8, "overslag": 0, "minimum_slagen": 1, "max_slagen": 1, "team": False},
-    "Samen 13": {"basispunten": 30, "verliezen": -26, "overslag": 0, "minimum_slagen": 13, "team": True},
 }
 
-# **🟢 JSON-bestand inladen of aanmaken**
+# 🟢 **JSON-bestand inladen of aanmaken**
 def load_scores():
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
     if not os.path.exists(SCORES_FILE):
         print("[INFO] scores.json niet gevonden. Nieuw bestand wordt aangemaakt.")
         save_scores({
@@ -34,36 +33,31 @@ def load_scores():
             "deler": 1,
             "ronde": 1
         })
+
     try:
         with open(SCORES_FILE, "r") as file:
             return json.load(file)
     except json.JSONDecodeError:
-        print("[ERROR] scores.json bevat corrupte data. Reset bestand!")
-        return {
-            "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
-            "namen": {"Speler 1": "Speler 1", "Speler 2": "Speler 2", "Speler 3": "Speler 3", "Speler 4": "Speler 4"},
-            "historiek": [],
-            "deler": 1,
-            "ronde": 1
-        }
+        print("[ERROR] scores.json bevat corrupte data. Bestand wordt gereset!")
+        return reset_scores()
 
-# **🔵 JSON opslaan**
+# 🟠 **JSON opslaan**
 def save_scores(data):
     with open(SCORES_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# **🟠 Laad bestaande scores**
+# **🟢 Laad bestaande scores**
 scores = load_scores()
 
-# **🟢 Startpagina laden**
+# **✅ Startpagina laden**
 @app.route('/')
 def index():
-    return render_template("index.html", 
-                           namen=scores["namen"], 
-                           ronde=scores.get("ronde", 1), 
-                           deler=scores.get("deler", 1),
-                           scores=scores["scores"],
-                           historiek=scores["historiek"])
+    return render_template("index.html")
+
+# **🔵 Haal de huidige scores op (voor AJAX frontend)**
+@app.route('/get_scores', methods=['GET'])
+def get_scores():
+    return jsonify(scores)
 
 # **🔵 Score berekenen**
 @app.route('/bereken', methods=['POST'])
@@ -76,34 +70,27 @@ def bereken():
         zetter = data.get("zetter")
         teamgenoten = data.get("teamgenoten", [])
 
-        # ✅ **Valideer invoerdata**
         if contract not in punten_tabel:
             return jsonify({"error": "Ongeldig contract!"}), 400
-        if not (1 <= slagen <= 13):
+        if not (0 <= slagen <= 13):
             return jsonify({"error": "Slagen moeten tussen 0 en 13 liggen!"}), 400
 
         info = punten_tabel[contract]
 
-        # **✅ Zorg dat teamgenoten leeg zijn bij solo-spel**
         if not info["team"]:
             teamgenoten = []
 
-        # **✅ Controle of er een teamgenoot is bij een teamspel**
         if info["team"] and len(teamgenoten) == 0:
             return jsonify({"error": "Je moet een extra speler aanduiden bij dit contract!"}), 400
 
-        # **✅ Controle of er geen teamgenoten zijn bij een solo-spel**
         if not info["team"] and len(teamgenoten) > 0:
             return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
 
-        # **✅ Controle: "Wie zet" mag niet in "Wie speelt mee" staan**
         if str(zetter) in teamgenoten:
             return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
 
-        # **✅ Scoreberekening**
         punten = info["basispunten"] if slagen >= info["minimum_slagen"] else info["verliezen"]
 
-        # **✅ Punten verdelen**
         tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
         if info["team"]:
@@ -116,14 +103,12 @@ def bereken():
                 scores["scores"][speler] -= punten
             scores["scores"][f"Speler {zetter}"] += punten * 3
 
-        # **✅ Historiek bijwerken**
         teamgenoot_namen = ", ".join([scores["namen"].get(f"Speler {int(speler)}", "Onbekend") for speler in teamgenoten])
         scores["historiek"].append(
             f"Ronde {scores['ronde']}: Contract: {contract}, Zetter: {scores['namen'].get(f'Speler {int(zetter)}', 'Onbekend')}, "
             f"Speelt mee: {teamgenoot_namen if teamgenoot_namen else 'Niemand'}, Punten: {punten}"
         )
 
-        # **✅ Ronde en deler updaten**
         scores["ronde"] += 1
         scores["deler"] = (scores["deler"] % 4) + 1
 
@@ -143,7 +128,7 @@ def bereken():
 
 # **🔴 Reset scores**
 @app.route('/reset', methods=['POST'])
-def reset():
+def reset_scores():
     global scores
     scores = {
         "scores": {"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0},
