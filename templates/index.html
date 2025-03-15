@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kleurenwies Score App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #2c3e50;
+            color: white;
+        }
+        input, select {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .scoreboard {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: inline-block;
+            text-align: left;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        table {
+            width: 50%;
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid white;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h2>Kleurenwies Score App</h2>
+
+    <h3>Spelersnamen instellen:</h3>
+    <input type="text" id="speler1" placeholder="Speler 1">
+    <input type="text" id="speler2" placeholder="Speler 2">
+    <input type="text" id="speler3" placeholder="Speler 3">
+    <input type="text" id="speler4" placeholder="Speler 4">
+    <button onclick="updateNamen()">Update Namen</button>
+    <br><br>
+
+    <h3>Kies een contract:</h3>
+    <select id="contract">
+        <option value="Samen 8">Samen 8</option>
+        <option value="Troel 8">Troel 8</option>
+        <option value="Solo 6">Solo 6</option>
+        <option value="Miserie">Miserie</option>
+        <option value="Picolo">Picolo</option>
+    </select>
+    <br>
+
+    <h3>Wie zet?</h3>
+    <select id="zetter">
+        <option value="1">Speler 1</option>
+        <option value="2">Speler 2</option>
+        <option value="3">Speler 3</option>
+        <option value="4">Speler 4</option>
+    </select>
+    <br>
+
+    <h3>Wie speelt mee?</h3>
+    <select id="teamgenoten" multiple>
+        <option value="1">Speler 1</option>
+        <option value="2">Speler 2</option>
+        <option value="3">Speler 3</option>
+        <option value="4">Speler 4</option>
+    </select>
+    <br>
+
+    <label for="slagen">Behaalde slagen:</label>
+    <input type="number" id="slagen" min="0" max="13">
+    <br>
+    <button onclick="berekenScore()">Bereken Score</button>
+    <button onclick="resetScores()">Reset Scores</button>
+    
+    <h3>Huidige Scores:</h3>
+    <table>
+        <tr>
+            <th>Speler</th>
+            <th>Score</th>
+        </tr>
+        <tr>
+            <td id="naam1">Speler 1</td>
+            <td id="score1">0</td>
+        </tr>
+        <tr>
+            <td id="naam2">Speler 2</td>
+            <td id="score2">0</td>
+        </tr>
+        <tr>
+            <td id="naam3">Speler 3</td>
+            <td id="score3">0</td>
+        </tr>
+        <tr>
+            <td id="naam4">Speler 4</td>
+            <td id="score4">0</td>
+        </tr>
+    </table>
+
+    <h3>Historiek:</h3>
+    <div id="historiek"></div>
+
+    <script>
+        function berekenScore() {
+            let contract = document.getElementById("contract").value;
+            let slagen = parseInt(document.getElementById("slagen").value);
+            let zetter = document.getElementById("zetter").value;
+            let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
+
+            fetch('/bereken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contract: contract, slagen: slagen, zetter: zetter, teamgenoten: teamgenoten })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("score1").innerText = data.scores["Speler 1"];
+                document.getElementById("score2").innerText = data.scores["Speler 2"];
+                document.getElementById("score3").innerText = data.scores["Speler 3"];
+                document.getElementById("score4").innerText = data.scores["Speler 4"];
+                updateHistoriek(data.historiek);
+            });
+        }
+
+        function updateHistoriek(historiek) {
+            let div = document.getElementById("historiek");
+            div.innerHTML = "<ul>" + historiek.map(item => `<li>${item}</li>`).join("") + "</ul>";
+        }
+
+        function resetScores() {
+            fetch('/reset', { method: 'POST' })
+            .then(() => {
+                document.getElementById("score1").innerText = "0";
+                document.getElementById("score2").innerText = "0";
+                document.getElementById("score3").innerText = "0";
+                document.getElementById("score4").innerText = "0";
+                document.getElementById("historiek").innerHTML = "";
+                alert("Scores gereset!");
+            });
+        }
+    </script>
+</body>
+</html>
