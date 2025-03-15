@@ -43,14 +43,6 @@
 <body>
     <h2>Kleurenwies Score App</h2>
 
-    <h3>Spelersnamen instellen:</h3>
-    <input type="text" id="speler1" placeholder="Speler 1">
-    <input type="text" id="speler2" placeholder="Speler 2">
-    <input type="text" id="speler3" placeholder="Speler 3">
-    <input type="text" id="speler4" placeholder="Speler 4">
-    <button onclick="updateNamen()">Update Namen</button>
-    <br><br>
-
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
 
     <h3>Kies een contract:</h3>
@@ -67,14 +59,6 @@
         <option value="Solo 8">Solo 8</option>
         <option value="Piccolo">Piccolo</option>
         <option value="Samen 13">Samen 13</option>
-        <option value="Solo 9">Solo 9</option>
-        <option value="Troel 8">Troel 8</option>
-        <option value="Grote Miserie">Grote Miserie</option>
-        <option value="Solo 10">Solo 10</option>
-        <option value="Solo 11">Solo 11</option>
-        <option value="Open Miserie">Open Miserie</option>
-        <option value="Solo 12">Solo 12</option>
-        <option value="Solo Slim 13">Solo Slim 13</option>
     </select>
     <br>
 
@@ -108,152 +92,98 @@
     <div id="historiek"></div>
 
     <script>
-        function updateNamen() {
-            let nieuweNamen = {
-                "Speler 1": document.getElementById("speler1").value || "Speler 1",
-                "Speler 2": document.getElementById("speler2").value || "Speler 2",
-                "Speler 3": document.getElementById("speler3").value || "Speler 3",
-                "Speler 4": document.getElementById("speler4").value || "Speler 4"
-            };
-
-            fetch('/update_namen', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(nieuweNamen)
-            })
+        function updateDropdowns() {
+            fetch('/get_scores')
             .then(response => response.json())
-            .then(() => updateDropdowns())
-            .catch(error => console.error("Fout bij updaten van namen:", error));
+            .then(data => {
+                console.log("[DEBUG] Data ontvangen van /get_scores:", data);
+
+                let namen = data.namen;
+                let ronde = data.ronde;
+                let deler = data.deler;
+                let zetterDropdown = document.getElementById("zetter");
+
+                document.getElementById("ronde").innerText = ronde;
+                document.getElementById("gever").innerText = namen["Speler " + deler];
+
+                // 🔹 Leegmaken en opnieuw vullen van de dropdowns
+                zetterDropdown.innerHTML = "";
+
+                Object.keys(namen).forEach(speler => {
+                    let spelerNummer = speler.replace("Speler ", "");
+                    let optieZetter = new Option(namen[speler], spelerNummer);
+                    zetterDropdown.add(optieZetter);
+                });
+
+                updateTeamgenoten();
+            })
+            .catch(error => console.error("[ERROR] Fout bij ophalen van scores:", error));
         }
 
-<script>
-    function updateDropdowns() {
-        fetch('/get_scores')
-        .then(response => response.json())
-        .then(data => {
-            let namen = data.namen;
-            let ronde = data.ronde;
-            let deler = data.deler;
-            let zetterDropdown = document.getElementById("zetter");
+        function updateTeamgenoten() {
+            let zetter = document.getElementById("zetter").value;
+            let contract = document.getElementById("contract").value;
             let teamgenotenDropdown = document.getElementById("teamgenoten");
 
-            document.getElementById("ronde").innerText = ronde;
-            document.getElementById("gever").innerText = namen["Speler " + deler];
+            teamgenotenDropdown.innerHTML = ""; // 🔹 Leegmaken dropdown
 
-            // 🔹 Leegmaken en opnieuw vullen van de dropdowns
-            zetterDropdown.innerHTML = "";
-            teamgenotenDropdown.innerHTML = "";
+            let isTeamSpel = contract.includes("Samen");
 
-            // 🔹 Alle spelers toevoegen aan "Wie zet?"
-            Object.keys(namen).forEach(speler => {
-                let spelerNummer = speler.replace("Speler ", "");
-                let optieZetter = new Option(namen[speler], spelerNummer);
-                zetterDropdown.add(optieZetter);
-            });
-
-            updateTeamgenoten(); // Zorgt dat "Wie speelt mee?" ook correct wordt gevuld
-        })
-        .catch(error => console.error("Fout bij ophalen van scores:", error));
-    }
-
-    function updateTeamgenoten() {
-        let zetter = document.getElementById("zetter").value;
-        let contract = document.getElementById("contract").value;
-        let teamgenotenDropdown = document.getElementById("teamgenoten");
-
-        teamgenotenDropdown.innerHTML = ""; // 🔹 Leegmaken dropdown
-
-        let isTeamSpel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
-
-        if (!isTeamSpel) {
-            teamgenotenDropdown.disabled = true;
-            return;
-        }
-
-        teamgenotenDropdown.disabled = false;
-
-        fetch('/get_scores')
-        .then(response => response.json())
-        .then(data => {
-            let namen = data.namen;
-
-            Object.keys(namen).forEach(speler => {
-                let spelerNummer = speler.replace("Speler ", "");
-                if (spelerNummer !== zetter) {  
-                    let optie = new Option(namen[speler], spelerNummer);
-                    teamgenotenDropdown.add(optie);
-                }
-            });
-        })
-        .catch(error => console.error("Fout bij ophalen van teamgenoten:", error));
-    }
-
-    function controleerContract() {
-        updateTeamgenoten();
-    }
-
-    window.onload = updateDropdowns;
-</script>
-    function controleerContract() {
-        updateTeamgenoten();
-    }
-
-    window.onload = updateDropdowns;
-</script>
-
-    function berekenScore() {
-        let contract = document.getElementById("contract").value;
-        let slagen = parseInt(document.getElementById("slagen").value);
-        let zetter = document.getElementById("zetter").value;
-        let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
-
-        console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
-
-        fetch('/bereken', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("[DEBUG] Antwoord van /bereken:", data);
-
-            if (data.error) {
-                alert("Fout: " + data.error);
-            } else {
-                updateScores(data.scores);
-                updateHistoriek(data.historiek);
+            if (!isTeamSpel) {
+                teamgenotenDropdown.disabled = true;
+                return;
             }
-        })
-        .catch(error => console.error("Fout bij berekenen van score:", error));
-    }
 
-    window.onload = updateDropdowns;
-</script>
-        function updateScores(scores) {
-            document.getElementById("score1").innerText = scores["Speler 1"];
-            document.getElementById("score2").innerText = scores["Speler 2"];
-            document.getElementById("score3").innerText = scores["Speler 3"];
-            document.getElementById("score4").innerText = scores["Speler 4"];
+            teamgenotenDropdown.disabled = false;
+
+            fetch('/get_scores')
+            .then(response => response.json())
+            .then(data => {
+                console.log("[DEBUG] Teamgenoten laden:", data.namen);
+
+                let namen = data.namen;
+                Object.keys(namen).forEach(speler => {
+                    let spelerNummer = speler.replace("Speler ", "");
+                    if (spelerNummer !== zetter) {  
+                        let optie = new Option(namen[speler], spelerNummer);
+                        teamgenotenDropdown.add(optie);
+                    }
+                });
+            })
+            .catch(error => console.error("[ERROR] Fout bij ophalen van teamgenoten:", error));
         }
 
-        function updateHistoriek(historiek) {
-            let historiekDiv = document.getElementById("historiek");
-            historiekDiv.innerHTML = "";
-            historiek.forEach(entry => {
-                let p = document.createElement("p");
-                p.innerText = entry;
-                historiekDiv.appendChild(p);
-            });
+        function controleerContract() {
+            updateTeamgenoten();
+        }
+
+        function berekenScore() {
+            let contract = document.getElementById("contract").value;
+            let slagen = parseInt(document.getElementById("slagen").value);
+            let zetter = document.getElementById("zetter").value;
+            let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
+
+            console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
+
+            fetch('/bereken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("[DEBUG] Antwoord van /bereken:", data);
+            })
+            .catch(error => console.error("[ERROR] Fout bij berekenen van score:", error));
         }
 
         function resetScores() {
             fetch('/reset', { method: 'POST' })
             .then(() => {
-                updateScores({"Speler 1": 0, "Speler 2": 0, "Speler 3": 0, "Speler 4": 0});
-                updateHistoriek([]);
+                console.log("[DEBUG] Scores gereset.");
+                updateDropdowns();
             })
-            .catch(error => console.error("Fout bij resetten van scores:", error));
+            .catch(error => console.error("[ERROR] Fout bij resetten van scores:", error));
         }
 
         window.onload = updateDropdowns;
