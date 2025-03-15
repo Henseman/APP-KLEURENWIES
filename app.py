@@ -147,7 +147,7 @@ if __name__ == "__main__":
 def get_scores():
     global scores
     return jsonify({
-        "namen": scores.get("namen", {  # ✅ Zorgt ervoor dat er altijd namen terugkomen
+        "namen": scores.get("namen", {  
             "Speler 1": "Speler 1",
             "Speler 2": "Speler 2",
             "Speler 3": "Speler 3",
@@ -158,6 +158,7 @@ def get_scores():
         }),
         "historiek": scores.get("historiek", []),
         "deler": scores.get("deler", 1)
+    })  # ✅ DIT HAAKJE ONTBREEKT IN JOUW CODE!
 
 @app.route('/update_namen', methods=['POST'])
 def update_namen():
