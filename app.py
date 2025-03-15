@@ -120,10 +120,6 @@ scores["historiek"].append(
 scores["deler"] = (scores.get("deler", 1) % 4) + 1
 save_scores(scores)
 
-
-    scores["deler"] = (scores.get("deler", 1) % 4) + 1
-    save_scores(scores)
-
     return jsonify({"punten": punten, "scores": scores["scores"], "historiek": scores["historiek"], "namen": scores["namen"], "deler": scores["deler"]})
     
 @app.route('/update_score', methods=['POST'])
