@@ -78,6 +78,10 @@ def bereken():
     if not info.get("team") and len(teamgenoten) > 0:
         return jsonify({"error": "Je mag geen extra spelers aanduiden bij een solo-contract!"}), 400
 
+    # ✅ **Controle: "Wie zet" mag niet in "Wie speelt mee" staan**
+    if str(zetter) in teamgenoten:
+        return jsonify({"error": "De speler die zet mag niet ook als teamgenoot geselecteerd worden!"}), 400
+
     # ✅ **Standaardberekening**
     if slagen == 13:
         punten = 30
