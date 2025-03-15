@@ -62,10 +62,17 @@ def bereken():
 
     tegenstanders = [f"Speler {i}" for i in range(1, 5) if str(i) not in [zetter] + teamgenoten]
 
-    for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
-        scores["scores"][speler] += punten
-    for speler in tegenstanders:
-        scores["scores"][speler] -= punten
+    # ** Correctie van de puntentelling **
+    if not info["team"]:  # Solo-spellen (1 tegen 3)
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten  # 3 tegenstanders verliezen punten
+        scores["scores"][f"Speler {zetter}"] += punten * 3  # Zetter krijgt punten van alle 3 tegenstanders
+
+    else:  # Team-spellen (2 tegen 2)
+        for speler in [f"Speler {zetter}"] + [f"Speler {i}" for i in teamgenoten]:
+            scores["scores"][speler] += punten
+        for speler in tegenstanders:
+            scores["scores"][speler] -= punten
 
     scores["historiek"].append(f"Contract: {contract}, Zetter: Speler {zetter}, Punten: {punten}")
 
