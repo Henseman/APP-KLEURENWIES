@@ -134,12 +134,117 @@
         }
 
         function berekenScore() {
-            alert("Score berekend!");
-        }
+    let contractButton = document.querySelector("#contracten button.active");
+    let zetterButton = document.querySelector("#zetter button.active");
+    let slagenButton = document.querySelector("#slagen button.active");
 
-        function resetScores() {
-            alert("Scores gereset!");
-        }
+    // ✅ **Check of alle verplichte velden zijn ingevuld**
+    if (!contractButton) {
+        alert("❌ Kies een contract!");
+        return;
+    }
+    if (!zetterButton) {
+        alert("❌ Kies wie zet!");
+        return;
+    }
+    if (!slagenButton) {
+        alert("❌ Kies het aantal behaalde slagen!");
+        return;
+    }
+
+    let contract = contractButton.innerText;
+    let zetter = zetterButton.dataset.speler;
+    let behaaldeSlagen = parseInt(slagenButton.innerText);
+
+    // ✅ **Teamgenoten ophalen**
+    let teamgenoten = [];
+    document.querySelectorAll("#teamgenoten button.active").forEach(btn => {
+        teamgenoten.push(btn.dataset.speler);
+    });
+
+    // ✅ **Scorelogica toepassen**
+    let puntenTabel = {
+        "Samen 8": { "punten": 8, "verlies": -11, "minimum": 8, "team": true },
+        "Solo 5": { "punten": 3, "verlies": -4, "minimum": 5, "team": false },
+        "Samen 9": { "punten": 11, "verlies": -14, "minimum": 9, "team": true },
+        "Solo 6": { "punten": 4, "verlies": -5, "minimum": 6, "team": false },
+        "Samen 10": { "punten": 14, "verlies": -17, "minimum": 10, "team": true },
+        "Solo 7": { "punten": 5, "verlies": -6, "minimum": 7, "team": false },
+        "Samen 11": { "punten": 17, "verlies": -20, "minimum": 11, "team": true },
+        "Kleine Miserie": { "punten": 6, "verlies": -6, "minimum": 0, "team": false },
+        "Samen 12": { "punten": 20, "verlies": -23, "minimum": 12, "team": true },
+        "Solo 8": { "punten": 7, "verlies": -8, "minimum": 8, "team": false },
+        "Piccolo": { "punten": 8, "verlies": -8, "minimum": 1, "team": false },
+        "Samen 13": { "punten": 30, "verlies": -26, "minimum": 13, "team": true },
+        "Solo 9": { "punten": 10, "verlies": -10, "minimum": 9, "team": false },
+        "Troel 8": { "punten": 16, "verlies": -16, "minimum": 8, "team": true },
+        "Miserie": { "punten": 12, "verlies": -12, "minimum": 0, "team": false },
+        "Solo 10": { "punten": 15, "verlies": -15, "minimum": 10, "team": false },
+        "Solo 11": { "punten": 20, "verlies": -20, "minimum": 11, "team": false },
+        "Open Miserie": { "punten": 24, "verlies": -24, "minimum": 0, "team": false },
+        "Solo 12": { "punten": 30, "verlies": -30, "minimum": 12, "team": false },
+        "Solo Slim 13": { "punten": 60, "verlies": -60, "minimum": 13, "team": false }
+    };
+
+    let contractInfo = puntenTabel[contract];
+
+    if (!contractInfo) {
+        alert("⚠️ Fout: Contract niet gevonden in puntenlijst!");
+        return;
+    }
+
+    let geslaagdePunten = (behaaldeSlagen >= contractInfo.minimum) ? contractInfo.punten : contractInfo.verlies;
+
+    // ✅ **Score toekennen**
+    let spelerScores = {
+        "1": parseInt(document.getElementById("score1").innerText),
+        "2": parseInt(document.getElementById("score2").innerText),
+        "3": parseInt(document.getElementById("score3").innerText),
+        "4": parseInt(document.getElementById("score4").innerText)
+    };
+
+    if (contractInfo.team) {
+        // **Team-spel: Punten voor zetter en teamgenoot, tegenstanders verliezen**
+        spelerScores[zetter] += geslaagdePunten;
+        teamgenoten.forEach(speler => {
+            spelerScores[speler] += geslaagdePunten;
+        });
+
+        let tegenstanders = ["1", "2", "3", "4"].filter(speler => ![zetter, ...teamgenoten].includes(speler));
+        tegenstanders.forEach(speler => {
+            spelerScores[speler] -= geslaagdePunten;
+        });
+
+    } else {
+        // **Solo-spel: Zetter krijgt punten, tegenstanders verliezen**
+        spelerScores[zetter] += geslaagdePunten * 3;
+        let tegenstanders = ["1", "2", "3", "4"].filter(speler => speler !== zetter);
+        tegenstanders.forEach(speler => {
+            spelerScores[speler] -= geslaagdePunten;
+        });
+    }
+
+    // ✅ **Update scoretabel**
+    document.getElementById("score1").innerText = spelerScores["1"];
+    document.getElementById("score2").innerText = spelerScores["2"];
+    document.getElementById("score3").innerText = spelerScores["3"];
+    document.getElementById("score4").innerText = spelerScores["4"];
+
+    // ✅ **Update historiek**
+    let teamgenootNamen = teamgenoten.map(speler => document.querySelector(`#speler${speler}`).value).join(", ") || "Geen";
+    let zetterNaam = document.querySelector(`#speler${zetter}`).value;
+
+    let historiekDiv = document.getElementById("historiek");
+    let nieuweHistoriek = document.createElement("p");
+    nieuweHistoriek.innerText = `Ronde ${document.getElementById("ronde").innerText}: ${contract}, Zetter: ${zetterNaam}, Team: ${teamgenootNamen}, Punten: ${geslaagdePunten}`;
+    historiekDiv.prepend(nieuweHistoriek);
+
+    // ✅ **Ronde en gever bijwerken**
+    let huidigeRonde = parseInt(document.getElementById("ronde").innerText);
+    document.getElementById("ronde").innerText = huidigeRonde + 1;
+    let nieuweGever = (parseInt(document.getElementById("gever").innerText.split(" ")[1]) % 4) + 1;
+    document.getElementById("gever").innerText = `Speler ${nieuweGever}`;
+}
 
 window.onload = function() {
     let zetterDiv = document.getElementById("zetter");
