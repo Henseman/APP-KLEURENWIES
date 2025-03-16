@@ -12,11 +12,6 @@
             background-color: #2c3e50;
             color: white;
         }
-        input, select {
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-        }
         button {
             padding: 10px;
             font-size: 16px;
@@ -24,6 +19,14 @@
             color: white;
             border: none;
             cursor: pointer;
+            margin: 5px;
+        }
+        .inactive {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+        .active {
+            background-color: #e74c3c;
         }
         table {
             width: 50%;
@@ -47,7 +50,7 @@
 
     <h3>Kies een contract:</h3>
     <select id="contract" onchange="controleerContract()">
-       <option value="Samen 8">Samen 8</option>
+        <option value="Samen 8">Samen 8</option>
         <option value="Solo 5">Solo 5</option>
         <option value="Samen 9">Samen 9</option>
         <option value="Solo 6">Solo 6</option> 
@@ -71,15 +74,14 @@
     <br>
 
     <h3>Wie zet?</h3>
-    <select id="zetter" onchange="updateTeamgenoten()"></select>
-    <br>
-
+    <div id="zetter-buttons"></div>
+    
     <h3>Wie speelt mee?</h3>
-    <select id="teamgenoten" multiple></select>
-
-    <br>
-    <label for="slagen">Behaalde slagen:</label>
-    <input type="number" id="slagen" min="0" max="13">
+    <div id="team-buttons"></div>
+    
+    <h3>Behaalde slagen:</h3>
+    <div id="slagen-buttons"></div>
+    
     <br>
     <button onclick="berekenScore()">Bereken Score</button>
     <button onclick="resetScores()">Reset Scores</button>
@@ -100,125 +102,63 @@
     <div id="historiek"></div>
 
     <script>
-        function updateDropdowns() {
-            fetch('/get_scores')
-            .then(response => response.json())
-            .then(data => {
-                console.log("[DEBUG] Data ontvangen van /get_scores:", data);
+        let spelers = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
+        let zetter = null;
+        let geselecteerdeSlagen = 0;
 
-                let namen = data.namen;
-                let ronde = data.ronde;
-                let deler = data.deler;
-                let zetterDropdown = document.getElementById("zetter");
-
-                document.getElementById("ronde").innerText = ronde;
-                document.getElementById("gever").innerText = namen["Speler " + deler];
-
-                // 🔹 Leegmaken en opnieuw vullen van de dropdowns
-                zetterDropdown.innerHTML = "";
-
-                Object.keys(namen).forEach(speler => {
-                    let spelerNummer = speler.replace("Speler ", "");
-                    let optieZetter = new Option(namen[speler], spelerNummer);
-                    zetterDropdown.add(optieZetter);
-                });
-
-                updateTeamgenoten();
-            })
-            .catch(error => console.error("[ERROR] Fout bij ophalen van scores:", error));
+        function genereerZetterKnoppen() {
+            let container = document.getElementById("zetter-buttons");
+            container.innerHTML = "";
+            spelers.forEach((naam, index) => {
+                let btn = document.createElement("button");
+                btn.innerText = naam;
+                btn.onclick = function() {
+                    zetter = index + 1;
+                    updateTeamKnoppen();
+                };
+                container.appendChild(btn);
+            });
         }
 
-        function updateTeamgenoten() {
-            let zetter = document.getElementById("zetter").value;
+        function updateTeamKnoppen() {
+            let container = document.getElementById("team-buttons");
+            container.innerHTML = "";
             let contract = document.getElementById("contract").value;
-            let teamgenotenDropdown = document.getElementById("teamgenoten");
+            let teamspel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
 
-            teamgenotenDropdown.innerHTML = ""; // 🔹 Leegmaken dropdown
-
-            let isTeamSpel = contract.includes("Samen");
-
-            if (!isTeamSpel) {
-                teamgenotenDropdown.disabled = true;
-                return;
-            }
-
-            teamgenotenDropdown.disabled = false;
-
-            fetch('/get_scores')
-            .then(response => response.json())
-            .then(data => {
-                console.log("[DEBUG] Teamgenoten laden:", data.namen);
-
-                let namen = data.namen;
-                Object.keys(namen).forEach(speler => {
-                    let spelerNummer = speler.replace("Speler ", "");
-                    if (spelerNummer !== zetter) {  
-                        let optie = new Option(namen[speler], spelerNummer);
-                        teamgenotenDropdown.add(optie);
-                    }
-                });
-            })
-            .catch(error => console.error("[ERROR] Fout bij ophalen van teamgenoten:", error));
+            spelers.forEach((naam, index) => {
+                let btn = document.createElement("button");
+                btn.innerText = naam;
+                btn.disabled = !teamspel || (index + 1 === zetter);
+                container.appendChild(btn);
+            });
         }
 
-        function controleerContract() {
-            updateTeamgenoten();
+        function genereerSlagenKnoppen() {
+            let container = document.getElementById("slagen-buttons");
+            container.innerHTML = "";
+            for (let i = 0; i <= 13; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = i;
+                btn.onclick = function() {
+                    geselecteerdeSlagen = i;
+                };
+                container.appendChild(btn);
+            }
         }
 
         function berekenScore() {
-    let contract = document.getElementById("contract").value;
-    let slagen = parseInt(document.getElementById("slagen").value);
-    let zetter = document.getElementById("zetter").value;
-    let teamgenoten = Array.from(document.getElementById("teamgenoten").selectedOptions).map(option => option.value);
-
-    console.log("[DEBUG] Verzonden data naar /bereken:", { contract, slagen, zetter, teamgenoten });
-
-    fetch('/bereken', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
-    })
-    .then(response => response.json())
-.then(data => {
-    console.log("[DEBUG] Nieuwe scores:", data);
-    updateScores(data.scores);  // ✅ Update de scores in de tabel
-    updateHistoriek(data.historiek);  // ✅ Update de historiek
-    document.getElementById("ronde").innerText = data.ronde;  // ✅ Ronde updaten
-    document.getElementById("gever").innerText = data.namen["Speler " + data.deler];  // ✅ Nieuwe gever tonen
-})
-.catch(error => console.error("Fout bij berekenen van score:", error));
-}
-
-function updateScores(scores) {
-    console.log("[DEBUG] Geüpdatete scores:", scores);
-
-    document.getElementById("score1").innerText = scores["Speler 1"];
-    document.getElementById("score2").innerText = scores["Speler 2"];
-    document.getElementById("score3").innerText = scores["Speler 3"];
-    document.getElementById("score4").innerText = scores["Speler 4"];
-}
-
-function updateHistoriek(historiek) {
-    let historiekDiv = document.getElementById("historiek");
-    historiekDiv.innerHTML = "";  // Leegmaken om dubbele invoer te voorkomen
-
-    historiek.forEach(entry => {
-        let p = document.createElement("p");
-        p.innerText = entry;
-        historiekDiv.appendChild(p);
-    });
-}
-
+            console.log("Berekenen score...");
+        }
+        
         function resetScores() {
-            fetch('/reset', { method: 'POST' })
-            .then(() => {
-                console.log("[DEBUG] Scores gereset.");
-                updateDropdowns();
-            })
-            .catch(error => console.error("[ERROR] Fout bij resetten van scores:", error));
+            console.log("Scores resetten...");
         }
 
-        window.onload = updateDropdowns;
+        window.onload = function() {
+            genereerZetterKnoppen();
+            genereerSlagenKnoppen();
+        };
     </script>
 </body>
-</html>
+</html
