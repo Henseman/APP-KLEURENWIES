@@ -123,40 +123,73 @@
             alert("Scores gereset!");
         }
 
-        window.onload = function() {
-            let zetterDiv = document.getElementById("zetter");
-            let teamgenotenDiv = document.getElementById("teamgenoten");
-            let slagenDiv = document.getElementById("slagen");
+    window.onload = function() {
+        updateNamen(); // Zorgt ervoor dat namen direct worden bijgewerkt bij laden van de pagina
+        
+        let zetterDiv = document.getElementById("zetter");
+        let teamgenotenDiv = document.getElementById("teamgenoten");
+        let slagenDiv = document.getElementById("slagen");
 
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = "Speler " + i;
-                btn.onclick = function() {
-                    document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-                zetterDiv.appendChild(btn);
-            }
+        for (let i = 1; i <= 4; i++) {
+            let btn = document.createElement("button");
+            btn.innerText = "Speler " + i;
+            btn.onclick = function() {
+                document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
+                btn.classList.add('active');
+            };
+            zetterDiv.appendChild(btn);
+        }
 
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = "Speler " + i;
-                btn.onclick = function() {
-                    btn.classList.toggle('active');
-                };
-                teamgenotenDiv.appendChild(btn);
-            }
+        for (let i = 1; i <= 4; i++) {
+            let btn = document.createElement("button");
+            btn.innerText = "Speler " + i;
+            btn.onclick = function() {
+                btn.classList.toggle('active');
+            };
+            teamgenotenDiv.appendChild(btn);
+        }
 
-            for (let i = 0; i <= 13; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = i;
-                btn.onclick = function() {
-                    document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-                slagenDiv.appendChild(btn);
-            }
-        };
-    </script>
+        for (let i = 0; i <= 13; i++) {
+            let btn = document.createElement("button");
+            btn.innerText = i;
+            btn.onclick = function() {
+                document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
+                btn.classList.add('active');
+            };
+            slagenDiv.appendChild(btn);
+        }
+    };
+
+    function updateNamen() {
+        let speler1 = document.getElementById("speler1").value || "Speler 1";
+        let speler2 = document.getElementById("speler2").value || "Speler 2";
+        let speler3 = document.getElementById("speler3").value || "Speler 3";
+        let speler4 = document.getElementById("speler4").value || "Speler 4";
+
+        let namen = [speler1, speler2, speler3, speler4];
+
+        // Update de knoppen voor wie zet
+        document.querySelectorAll("#zetter button").forEach((btn, index) => {
+            btn.innerText = namen[index];
+        });
+
+        // Update de knoppen voor wie speelt mee
+        document.querySelectorAll("#teamgenoten button").forEach((btn, index) => {
+            btn.innerText = namen[index];
+        });
+
+        // Update de scoretabel
+        document.getElementById("naam1").innerText = speler1;
+        document.getElementById("naam2").innerText = speler2;
+        document.getElementById("naam3").innerText = speler3;
+        document.getElementById("naam4").innerText = speler4;
+    }
+
+    // Voeg event listeners toe zodat de namen meteen worden bijgewerkt bij het typen
+    document.getElementById("speler1").addEventListener("input", updateNamen);
+    document.getElementById("speler2").addEventListener("input", updateNamen);
+    document.getElementById("speler3").addEventListener("input", updateNamen);
+    document.getElementById("speler4").addEventListener("input", updateNamen);
+</script>
 </body>
 </html>
