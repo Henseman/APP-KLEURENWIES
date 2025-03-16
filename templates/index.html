@@ -14,49 +14,50 @@
             padding: 20px;
         }
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .input-group, .button-group {
+            margin-bottom: 15px;
         }
         input, button {
             padding: 10px;
             margin: 5px;
             font-size: 16px;
-        }
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .button-grid button {
-            width: 120px;
-            height: 50px;
-            font-size: 16px;
             border: none;
             cursor: pointer;
-            background-color: #34495e;
-            color: white;
             border-radius: 5px;
         }
-        .button-grid button.active {
+        input {
+            width: 45%;
+            text-align: center;
+        }
+        button {
+            width: 45%;
+            background-color: #3498db;
+            color: white;
+        }
+        button.active {
             background-color: #27ae60;
         }
-        .button-grid button.disabled {
+        button.disabled {
             background-color: #e74c3c;
         }
-        .score-table {
-            width: 50%;
+        table {
+            width: 100%;
             margin-top: 20px;
             border-collapse: collapse;
         }
-        .score-table th, .score-table td {
+        th, td {
             border: 1px solid white;
             padding: 10px;
             text-align: center;
         }
-        .score-table th {
+        th {
             background-color: darkred;
         }
     </style>
@@ -64,99 +65,98 @@
 <body>
     <div class="container">
         <h2>Kleurenwies Score App</h2>
-
-        <div>
-            <label>Spelersnamen:</label>
-            <input type="text" id="speler1" placeholder="Speler 1" onchange="updateNamen()">
-            <input type="text" id="speler2" placeholder="Speler 2" onchange="updateNamen()">
-            <input type="text" id="speler3" placeholder="Speler 3" onchange="updateNamen()">
-            <input type="text" id="speler4" placeholder="Speler 4" onchange="updateNamen()">
+        
+        <div class="input-group">
+            <input type="text" id="speler1" placeholder="Speler 1">
+            <input type="text" id="speler2" placeholder="Speler 2">
+            <input type="text" id="speler3" placeholder="Speler 3">
+            <input type="text" id="speler4" placeholder="Speler 4">
         </div>
-
+        
         <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
-
-        <h3>Kies een contract:</h3>
-        <div class="button-grid" id="contract-buttons"></div>
-
+        
+        <div class="button-group" id="contracten">
+            <button onclick="selectContract(this, 'Samen 8')">Samen 8</button>
+            <button onclick="selectContract(this, 'Solo 5')">Solo 5</button>
+        </div>
+        
         <h3>Wie zet?</h3>
-        <div class="button-grid" id="zetter-buttons"></div>
-
+        <div class="button-group" id="zetter"></div>
+        
         <h3>Wie speelt mee?</h3>
-        <div class="button-grid" id="teamgenoten-buttons"></div>
-
+        <div class="button-group" id="teamgenoten"></div>
+        
         <h3>Behaalde slagen:</h3>
-        <div class="button-grid" id="slagen-buttons"></div>
-
-        <button onclick="berekenScore()">Bereken Score</button>
-        <button onclick="resetScores()">Reset Scores</button>
-
+        <div class="button-group" id="slagen"></div>
+        
+        <button onclick="berekenScore()" style="background-color: #1abc9c; width: 100%;">Bereken Score</button>
+        <button onclick="resetScores()" style="background-color: #e74c3c; width: 100%;">Reset Scores</button>
+        
         <h3>Huidige Scores:</h3>
-        <table class="score-table">
-            <tr><th>Speler</th><th>Score</th></tr>
+        <table>
+            <tr>
+                <th>Speler</th>
+                <th>Score</th>
+            </tr>
             <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
             <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
             <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
             <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
         </table>
-
+        
         <h3>Historiek:</h3>
         <div id="historiek"></div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            updateContractKnoppen();
-            updateSlagenKnoppen();
-        });
-
-        function updateNamen() {
-            let namen = {
-                "Speler 1": document.getElementById("speler1").value || "Speler 1",
-                "Speler 2": document.getElementById("speler2").value || "Speler 2",
-                "Speler 3": document.getElementById("speler3").value || "Speler 3",
-                "Speler 4": document.getElementById("speler4").value || "Speler 4"
-            };
-            fetch('/update_namen', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(namen)
-            })
-            .then(() => updateDropdowns())
-            .catch(error => console.error("Fout bij updaten van namen:", error));
+        function selectContract(button, contract) {
+            document.querySelectorAll('#contracten button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            console.log("Gekozen contract:", contract);
         }
 
-        function updateContractKnoppen() {
-            let contracts = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
-            let container = document.getElementById("contract-buttons");
-            container.innerHTML = "";
-            contracts.forEach(contract => {
-                let button = document.createElement("button");
-                button.innerText = contract;
-                button.onclick = function() { selectContract(contract, this); };
-                container.appendChild(button);
-            });
+        function berekenScore() {
+            alert("Score berekend!");
         }
 
-        function selectContract(contract, element) {
-            document.querySelectorAll("#contract-buttons button").forEach(btn => btn.classList.remove("active"));
-            element.classList.add("active");
+        function resetScores() {
+            alert("Scores gereset!");
         }
 
-        function updateSlagenKnoppen() {
-            let container = document.getElementById("slagen-buttons");
-            container.innerHTML = "";
-            for (let i = 0; i <= 13; i++) {
-                let button = document.createElement("button");
-                button.innerText = i;
-                button.onclick = function() { selectSlagen(i, this); };
-                container.appendChild(button);
+        window.onload = function() {
+            let zetterDiv = document.getElementById("zetter");
+            let teamgenotenDiv = document.getElementById("teamgenoten");
+            let slagenDiv = document.getElementById("slagen");
+
+            for (let i = 1; i <= 4; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = "Speler " + i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
+                    btn.classList.add('active');
+                };
+                zetterDiv.appendChild(btn);
             }
-        }
 
-        function selectSlagen(value, element) {
-            document.querySelectorAll("#slagen-buttons button").forEach(btn => btn.classList.remove("active"));
-            element.classList.add("active");
-        }
+            for (let i = 1; i <= 4; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = "Speler " + i;
+                btn.onclick = function() {
+                    btn.classList.toggle('active');
+                };
+                teamgenotenDiv.appendChild(btn);
+            }
+
+            for (let i = 0; i <= 13; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
+                    btn.classList.add('active');
+                };
+                slagenDiv.appendChild(btn);
+            }
+        };
     </script>
 </body>
 </html>
