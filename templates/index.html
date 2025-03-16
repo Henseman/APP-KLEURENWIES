@@ -12,21 +12,22 @@
             background-color: #2c3e50;
             color: white;
         }
-        button {
+        .button-container button {
             padding: 10px;
+            margin: 5px;
             font-size: 16px;
-            background-color: #3498db;
+            background-color: grey;
             color: white;
             border: none;
             cursor: pointer;
-            margin: 5px;
-        }
-        .inactive {
-            background-color: grey;
-            cursor: not-allowed;
+            width: 120px;
         }
         .active {
-            background-color: #e74c3c;
+            background-color: green !important;
+        }
+        .disabled {
+            background-color: red !important;
+            pointer-events: none;
         }
         table {
             width: 50%;
@@ -53,7 +54,7 @@
         <option value="Samen 8">Samen 8</option>
         <option value="Solo 5">Solo 5</option>
         <option value="Samen 9">Samen 9</option>
-        <option value="Solo 6">Solo 6</option> 
+        <option value="Solo 6">Solo 6</option>
         <option value="Samen 10">Samen 10</option>
         <option value="Solo 7">Solo 7</option>
         <option value="Samen 11">Samen 11</option>
@@ -74,13 +75,13 @@
     <br>
 
     <h3>Wie zet?</h3>
-    <div id="zetter-buttons"></div>
-    
+    <div class="button-container" id="zetter-container"></div>
+
     <h3>Wie speelt mee?</h3>
-    <div id="team-buttons"></div>
-    
+    <div class="button-container" id="teamgenoten-container"></div>
+
     <h3>Behaalde slagen:</h3>
-    <div id="slagen-buttons"></div>
+    <div class="button-container" id="slagen-container"></div>
     
     <br>
     <button onclick="berekenScore()">Bereken Score</button>
@@ -98,67 +99,75 @@
         <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
     </table>
 
-    <h3>Historiek:</h3>
-    <div id="historiek"></div>
-
     <script>
-        let spelers = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
         let zetter = null;
-        let geselecteerdeSlagen = 0;
+        let teamgenoten = [];
+        let slagen = null;
 
-        function genereerZetterKnoppen() {
-            let container = document.getElementById("zetter-buttons");
-            container.innerHTML = "";
-            spelers.forEach((naam, index) => {
+        function setupButtons() {
+            let spelers = ['Speler 1', 'Speler 2', 'Speler 3', 'Speler 4'];
+            let zetterContainer = document.getElementById("zetter-container");
+            let teamgenotenContainer = document.getElementById("teamgenoten-container");
+            let slagenContainer = document.getElementById("slagen-container");
+            
+            spelers.forEach((speler, index) => {
                 let btn = document.createElement("button");
-                btn.innerText = naam;
-                btn.onclick = function() {
-                    zetter = index + 1;
-                    updateTeamKnoppen();
-                };
-                container.appendChild(btn);
+                btn.innerText = speler;
+                btn.onclick = () => kiesZetter(index + 1);
+                zetterContainer.appendChild(btn);
             });
-        }
 
-        function updateTeamKnoppen() {
-            let container = document.getElementById("team-buttons");
-            container.innerHTML = "";
-            let contract = document.getElementById("contract").value;
-            let teamspel = !contract.includes("Solo") && !contract.includes("Miserie") && contract !== "Piccolo";
-
-            spelers.forEach((naam, index) => {
+            spelers.forEach((speler, index) => {
                 let btn = document.createElement("button");
-                btn.innerText = naam;
-                btn.disabled = !teamspel || (index + 1 === zetter);
-                container.appendChild(btn);
+                btn.innerText = speler;
+                btn.onclick = () => toggleTeamgenoot(index + 1);
+                btn.classList.add("disabled");
+                teamgenotenContainer.appendChild(btn);
             });
-        }
 
-        function genereerSlagenKnoppen() {
-            let container = document.getElementById("slagen-buttons");
-            container.innerHTML = "";
             for (let i = 0; i <= 13; i++) {
                 let btn = document.createElement("button");
                 btn.innerText = i;
-                btn.onclick = function() {
-                    geselecteerdeSlagen = i;
-                };
-                container.appendChild(btn);
+                btn.onclick = () => kiesSlagen(i);
+                slagenContainer.appendChild(btn);
             }
         }
 
-        function berekenScore() {
-            console.log("Berekenen score...");
-        }
-        
-        function resetScores() {
-            console.log("Scores resetten...");
+        function kiesZetter(nummer) {
+            zetter = nummer;
+            document.querySelectorAll("#zetter-container button").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll("#zetter-container button")[nummer - 1].classList.add("active");
+            controleerContract();
         }
 
-        window.onload = function() {
-            genereerZetterKnoppen();
-            genereerSlagenKnoppen();
-        };
+        function toggleTeamgenoot(nummer) {
+            if (zetter === nummer) return;
+            let index = teamgenoten.indexOf(nummer);
+            if (index > -1) {
+                teamgenoten.splice(index, 1);
+            } else {
+                teamgenoten.push(nummer);
+            }
+            updateTeamgenootButtons();
+        }
+
+        function updateTeamgenootButtons() {
+            document.querySelectorAll("#teamgenoten-container button").forEach((btn, index) => {
+                if (zetter === index + 1) {
+                    btn.classList.add("disabled");
+                } else {
+                    btn.classList.toggle("active", teamgenoten.includes(index + 1));
+                }
+            });
+        }
+
+        function kiesSlagen(aantal) {
+            slagen = aantal;
+            document.querySelectorAll("#slagen-container button").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll("#slagen-container button")[aantal].classList.add("active");
+        }
+        
+        window.onload = setupButtons;
     </script>
 </body>
-</html
+</html>
