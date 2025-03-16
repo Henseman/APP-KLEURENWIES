@@ -12,22 +12,22 @@
             background-color: #2c3e50;
             color: white;
         }
-        .button-container button {
+        button {
             padding: 10px;
-            margin: 5px;
             font-size: 16px;
-            background-color: grey;
-            color: white;
+            margin: 5px;
             border: none;
             cursor: pointer;
-            width: 120px;
+        }
+        .inactive {
+            background-color: red;
         }
         .active {
-            background-color: green !important;
+            background-color: green;
         }
         .disabled {
-            background-color: red !important;
-            pointer-events: none;
+            background-color: grey;
+            cursor: not-allowed;
         }
         table {
             width: 50%;
@@ -72,17 +72,16 @@
         <option value="Solo 12">Solo 12</option>
         <option value="Solo Slim 13">Solo Slim 13</option>
     </select>
-    <br>
 
     <h3>Wie zet?</h3>
-    <div class="button-container" id="zetter-container"></div>
+    <div id="zetterKnoppen"></div>
 
     <h3>Wie speelt mee?</h3>
-    <div class="button-container" id="teamgenoten-container"></div>
+    <div id="teamKnoppen"></div>
 
     <h3>Behaalde slagen:</h3>
-    <div class="button-container" id="slagen-container"></div>
-    
+    <div id="slagenKnoppen"></div>
+
     <br>
     <button onclick="berekenScore()">Bereken Score</button>
     <button onclick="resetScores()">Reset Scores</button>
@@ -99,75 +98,81 @@
         <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
     </table>
 
+    <h3>Historiek:</h3>
+    <div id="historiek"></div>
+
     <script>
+        let namen = {"1": "Speler 1", "2": "Speler 2", "3": "Speler 3", "4": "Speler 4"};
         let zetter = null;
         let teamgenoten = [];
-        let slagen = null;
+        let geselecteerdeSlagen = null;
 
-        function setupButtons() {
-            let spelers = ['Speler 1', 'Speler 2', 'Speler 3', 'Speler 4'];
-            let zetterContainer = document.getElementById("zetter-container");
-            let teamgenotenContainer = document.getElementById("teamgenoten-container");
-            let slagenContainer = document.getElementById("slagen-container");
-            
-            spelers.forEach((speler, index) => {
-                let btn = document.createElement("button");
-                btn.innerText = speler;
-                btn.onclick = () => kiesZetter(index + 1);
-                zetterContainer.appendChild(btn);
-            });
+        function updateKnoppen() {
+            let zetterDiv = document.getElementById("zetterKnoppen");
+            let teamDiv = document.getElementById("teamKnoppen");
+            let slagenDiv = document.getElementById("slagenKnoppen");
 
-            spelers.forEach((speler, index) => {
+            zetterDiv.innerHTML = "";
+            teamDiv.innerHTML = "";
+            slagenDiv.innerHTML = "";
+
+            for (let i = 1; i <= 4; i++) {
                 let btn = document.createElement("button");
-                btn.innerText = speler;
-                btn.onclick = () => toggleTeamgenoot(index + 1);
-                btn.classList.add("disabled");
-                teamgenotenContainer.appendChild(btn);
-            });
+                btn.innerText = namen[i];
+                btn.classList.add("inactive");
+                btn.onclick = function() { selectZetter(i, btn); };
+                zetterDiv.appendChild(btn);
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = namen[i];
+                btn.classList.add("inactive");
+                btn.onclick = function() { selectTeamgenoot(i, btn); };
+                teamDiv.appendChild(btn);
+            }
 
             for (let i = 0; i <= 13; i++) {
                 let btn = document.createElement("button");
                 btn.innerText = i;
-                btn.onclick = () => kiesSlagen(i);
-                slagenContainer.appendChild(btn);
+                btn.classList.add("inactive");
+                btn.onclick = function() { selectSlagen(i, btn); };
+                slagenDiv.appendChild(btn);
             }
         }
 
-        function kiesZetter(nummer) {
-            zetter = nummer;
-            document.querySelectorAll("#zetter-container button").forEach(btn => btn.classList.remove("active"));
-            document.querySelectorAll("#zetter-container button")[nummer - 1].classList.add("active");
+        function selectZetter(id, btn) {
+            zetter = id;
+            document.querySelectorAll("#zetterKnoppen button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
             controleerContract();
         }
 
-        function toggleTeamgenoot(nummer) {
-            if (zetter === nummer) return;
-            let index = teamgenoten.indexOf(nummer);
-            if (index > -1) {
-                teamgenoten.splice(index, 1);
+        function selectTeamgenoot(id, btn) {
+            if (teamgenoten.includes(id)) {
+                teamgenoten = teamgenoten.filter(t => t !== id);
+                btn.classList.remove("active");
             } else {
-                teamgenoten.push(nummer);
+                teamgenoten.push(id);
+                btn.classList.add("active");
             }
-            updateTeamgenootButtons();
         }
 
-        function updateTeamgenootButtons() {
-            document.querySelectorAll("#teamgenoten-container button").forEach((btn, index) => {
-                if (zetter === index + 1) {
-                    btn.classList.add("disabled");
-                } else {
-                    btn.classList.toggle("active", teamgenoten.includes(index + 1));
-                }
+        function selectSlagen(id, btn) {
+            geselecteerdeSlagen = id;
+            document.querySelectorAll("#slagenKnoppen button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+        }
+
+        function controleerContract() {
+            let contract = document.getElementById("contract").value;
+            let isSolo = contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo");
+            document.querySelectorAll("#teamKnoppen button").forEach(btn => {
+                btn.classList.toggle("disabled", isSolo || btn.innerText === namen[zetter]);
             });
         }
 
-        function kiesSlagen(aantal) {
-            slagen = aantal;
-            document.querySelectorAll("#slagen-container button").forEach(btn => btn.classList.remove("active"));
-            document.querySelectorAll("#slagen-container button")[aantal].classList.add("active");
-        }
-        
-        window.onload = setupButtons;
+        updateKnoppen();
     </script>
 </body>
 </html>
