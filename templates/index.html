@@ -199,7 +199,7 @@ window.onload = function() {
     document.getElementById("speler4").addEventListener("input", updateNamen);
 
 function updateTeamgenoten() {
-    let contractButton = document.querySelector("#contracten button.active"); 
+    let contractButton = document.querySelector("#contracten button.active");
     let contract = contractButton ? contractButton.innerText : ""; 
 
     let teamSpel = contract.includes("Samen");
@@ -209,31 +209,38 @@ function updateTeamgenoten() {
     let zetter = zetterButton ? zetterButton.dataset.speler : null; 
 
     let teamgenotenButtons = document.querySelectorAll("#teamgenoten button");
-    
+
+    // Reset de geselecteerde spelerslijst
     let geselecteerdeTeamgenoten = [];
 
     teamgenotenButtons.forEach(btn => {
-        btn.classList.remove("active");
+        btn.classList.remove("active"); 
         btn.disabled = false;
         btn.style.backgroundColor = "#3498db"; 
 
         if (soloSpel) {
+            // ❌ Solo-spel: Geen teamgenoten mogelijk
             btn.disabled = true;
             btn.style.backgroundColor = "#e74c3c"; 
         } else if (teamSpel) {
             if (btn.dataset.speler === zetter) {
+                // ❌ Teamspel: De zetter mag niet gekozen worden
                 btn.disabled = true;
-                btn.style.backgroundColor = "#e74c3c";
+                btn.style.backgroundColor = "#e74c3c"; 
             }
         }
 
+        // ✅ Toevoegen event listener voor klikken op de knoppen
         btn.onclick = function() {
             if (!soloSpel) {
                 if (btn.classList.contains("active")) {
+                    // 🎯 Speler deselecteren
                     btn.classList.remove("active");
+                    btn.style.backgroundColor = "#3498db"; 
                     geselecteerdeTeamgenoten = geselecteerdeTeamgenoten.filter(speler => speler !== btn.dataset.speler);
                 } else {
-                    if (geselecteerdeTeamgenoten.length < 1) { 
+                    // ✅ Zorg dat slechts **1 speler extra gekozen kan worden** bij een teamspel
+                    if (geselecteerdeTeamgenoten.length < 1) {
                         btn.classList.add("active");
                         btn.style.backgroundColor = "#27ae60"; 
                         geselecteerdeTeamgenoten.push(btn.dataset.speler);
