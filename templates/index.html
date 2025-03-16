@@ -12,29 +12,26 @@
             background-color: #2c3e50;
             color: white;
         }
-        input, button {
+        .button {
             padding: 10px;
-            margin: 5px;
             font-size: 16px;
-        }
-        button {
             background-color: #3498db;
             color: white;
             border: none;
             cursor: pointer;
             width: 120px;
             height: 50px;
+            margin: 5px;
         }
-        .active {
+        .selected {
             background-color: green;
         }
         .disabled {
             background-color: red;
+            pointer-events: none;
         }
-        .contracten button, .zetter-knoppen button, .team-knoppen button, .score-knoppen button {
-            width: 120px;
-            height: 50px;
-            font-size: 14px;
+        .scoreboard {
+            margin-top: 20px;
         }
         table {
             width: 50%;
@@ -55,74 +52,119 @@
     <h2>Kleurenwies Score App</h2>
 
     <h3>Spelersnamen instellen:</h3>
-    <input type="text" id="speler1" placeholder="Speler 1" oninput="updateKnoppen()">
-    <input type="text" id="speler2" placeholder="Speler 2" oninput="updateKnoppen()">
-    <input type="text" id="speler3" placeholder="Speler 3" oninput="updateKnoppen()">
-    <input type="text" id="speler4" placeholder="Speler 4" oninput="updateKnoppen()">
-    
+    <input type="text" id="speler1" placeholder="Speler 1">
+    <input type="text" id="speler2" placeholder="Speler 2">
+    <input type="text" id="speler3" placeholder="Speler 3">
+    <input type="text" id="speler4" placeholder="Speler 4">
+    <button onclick="updateNamen()">Update Namen</button>
+    <br><br>
+
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
 
     <h3>Kies een contract:</h3>
-    <div class="contracten">
-        <button onclick="selecteerContract(this)">Samen 8</button>
-        <button onclick="selecteerContract(this)">Solo 5</button>
-        <button onclick="selecteerContract(this)">Samen 9</button>
-        <button onclick="selecteerContract(this)">Solo 6</button>
-    </div>
-    
+    <div id="contracten"></div>
+    <br>
+
     <h3>Wie zet?</h3>
-    <div class="zetter-knoppen">
-        <button id="zetter1" onclick="selecteerZetter(1)">Speler 1</button>
-        <button id="zetter2" onclick="selecteerZetter(2)">Speler 2</button>
-        <button id="zetter3" onclick="selecteerZetter(3)">Speler 3</button>
-        <button id="zetter4" onclick="selecteerZetter(4)">Speler 4</button>
-    </div>
+    <div id="zetter"></div>
+    <br>
 
     <h3>Wie speelt mee?</h3>
-    <div class="team-knoppen">
-        <button id="team1" onclick="selecteerTeamgenoot(1)">Speler 1</button>
-        <button id="team2" onclick="selecteerTeamgenoot(2)">Speler 2</button>
-        <button id="team3" onclick="selecteerTeamgenoot(3)">Speler 3</button>
-        <button id="team4" onclick="selecteerTeamgenoot(4)">Speler 4</button>
-    </div>
+    <div id="teamgenoten"></div>
+    <br>
 
     <h3>Behaalde slagen:</h3>
-    <div class="score-knoppen">
-        <button onclick="selecteerSlagen(0)">0</button>
-        <button onclick="selecteerSlagen(1)">1</button>
-        <button onclick="selecteerSlagen(2)">2</button>
-        <button onclick="selecteerSlagen(3)">3</button>
-    </div>
-
-    <button onclick="berekenScore()">Bereken Score</button>
-    <button onclick="resetScores()">Reset Scores</button>
+    <div id="slagen"></div>
+    <br>
+    <button class="button" onclick="berekenScore()">Bereken Score</button>
+    <button class="button" onclick="resetScores()">Reset Scores</button>
     
-    <h3>Huidige Scores:</h3>
-    <table>
-        <tr>
-            <th>Speler</th>
-            <th>Score</th>
-        </tr>
-        <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
-        <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
-        <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
-        <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
-    </table>
+    <div class="scoreboard">
+        <h3>Huidige Scores:</h3>
+        <table>
+            <tr>
+                <th>Speler</th>
+                <th>Score</th>
+            </tr>
+            <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
+            <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
+            <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
+            <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
+        </table>
+    </div>
 
     <h3>Historiek:</h3>
     <div id="historiek"></div>
 
     <script>
-        function updateKnoppen() {
-            document.getElementById("zetter1").innerText = document.getElementById("speler1").value || "Speler 1";
-            document.getElementById("zetter2").innerText = document.getElementById("speler2").value || "Speler 2";
-            document.getElementById("zetter3").innerText = document.getElementById("speler3").value || "Speler 3";
-            document.getElementById("zetter4").innerText = document.getElementById("speler4").value || "Speler 4";
-            document.getElementById("team1").innerText = document.getElementById("speler1").value || "Speler 1";
-            document.getElementById("team2").innerText = document.getElementById("speler2").value || "Speler 2";
-            document.getElementById("team3").innerText = document.getElementById("speler3").value || "Speler 3";
-            document.getElementById("team4").innerText = document.getElementById("speler4").value || "Speler 4";
+        function updateNamen() {
+            let namen = {
+                "Speler 1": document.getElementById("speler1").value || "Speler 1",
+                "Speler 2": document.getElementById("speler2").value || "Speler 2",
+                "Speler 3": document.getElementById("speler3").value || "Speler 3",
+                "Speler 4": document.getElementById("speler4").value || "Speler 4"
+            };
+            fetch('/update_namen', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(namen)
+            })
+            .then(response => response.json())
+            .then(data => updateInterface())
+            .catch(error => console.error("Fout bij updaten van namen:", error));
         }
+
+        function updateInterface() {
+            fetch('/get_scores')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("ronde").innerText = data.ronde;
+                document.getElementById("gever").innerText = data.namen["Speler " + data.deler];
+                updateButtons("zetter", Object.values(data.namen));
+                updateButtons("teamgenoten", Object.values(data.namen));
+                updateButtons("slagen", Array.from({length: 14}, (_, i) => i));
+            })
+            .catch(error => console.error("Fout bij ophalen van scores:", error));
+        }
+
+        function updateButtons(containerId, options) {
+            let container = document.getElementById(containerId);
+            container.innerHTML = "";
+            options.forEach(option => {
+                let button = document.createElement("button");
+                button.innerText = option;
+                button.className = "button";
+                button.onclick = function () {
+                    document.querySelectorAll(`#${containerId} .button`).forEach(btn => btn.classList.remove("selected"));
+                    this.classList.add("selected");
+                };
+                container.appendChild(button);
+            });
+        }
+
+        function berekenScore() {
+            let contract = document.querySelector("#contracten .selected")?.innerText;
+            let zetter = document.querySelector("#zetter .selected")?.innerText;
+            let teamgenoten = Array.from(document.querySelectorAll("#teamgenoten .selected"), btn => btn.innerText);
+            let slagen = document.querySelector("#slagen .selected")?.innerText;
+
+            fetch('/bereken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+            })
+            .then(response => response.json())
+            .then(data => updateInterface())
+            .catch(error => console.error("Fout bij berekenen van score:", error));
+        }
+
+        function resetScores() {
+            fetch('/reset', { method: 'POST' })
+            .then(() => updateInterface())
+            .catch(error => console.error("Fout bij resetten van scores:", error));
+        }
+
+        window.onload = updateInterface;
     </script>
 </body>
 </html>
