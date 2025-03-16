@@ -123,42 +123,49 @@
             alert("Scores gereset!");
         }
 
-    window.onload = function() {
-        updateNamen(); // Zorgt ervoor dat namen direct worden bijgewerkt bij laden van de pagina
-        
-        let zetterDiv = document.getElementById("zetter");
-        let teamgenotenDiv = document.getElementById("teamgenoten");
-        let slagenDiv = document.getElementById("slagen");
+window.onload = function() {
+    let zetterDiv = document.getElementById("zetter");
+    let teamgenotenDiv = document.getElementById("teamgenoten");
+    let slagenDiv = document.getElementById("slagen");
 
-        for (let i = 1; i <= 4; i++) {
-            let btn = document.createElement("button");
-            btn.innerText = "Speler " + i;
-            btn.onclick = function() {
-                document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
-                btn.classList.add('active');
-            };
-            zetterDiv.appendChild(btn);
-        }
+    // Maak de knoppen voor wie zet
+    for (let i = 1; i <= 4; i++) {
+        let btn = document.createElement("button");
+        btn.innerText = "Speler " + i;
+        btn.dataset.speler = i; // Slaat het speler-nummer op
+        btn.onclick = function() {
+            document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        zetterDiv.appendChild(btn);
+    }
 
-        for (let i = 1; i <= 4; i++) {
-            let btn = document.createElement("button");
-            btn.innerText = "Speler " + i;
-            btn.onclick = function() {
-                btn.classList.toggle('active');
-            };
-            teamgenotenDiv.appendChild(btn);
-        }
+    // Maak de knoppen voor wie speelt mee
+    for (let i = 1; i <= 4; i++) {
+        let btn = document.createElement("button");
+        btn.innerText = "Speler " + i;
+        btn.dataset.speler = i; // Slaat het speler-nummer op
+        btn.onclick = function() {
+            btn.classList.toggle('active');
+        };
+        teamgenotenDiv.appendChild(btn);
+    }
 
-        for (let i = 0; i <= 13; i++) {
-            let btn = document.createElement("button");
-            btn.innerText = i;
-            btn.onclick = function() {
-                document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
-                btn.classList.add('active');
-            };
-            slagenDiv.appendChild(btn);
-        }
-    };
+    // Maak de knoppen voor behaalde slagen
+    for (let i = 0; i <= 13; i++) {
+        let btn = document.createElement("button");
+        btn.innerText = i;
+        btn.dataset.slagen = i; // Slaat het slagen-nummer op
+        btn.onclick = function() {
+            document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        slagenDiv.appendChild(btn);
+    }
+
+    // **BELANGRIJK**: Roep updateNamen() pas aan nadat de knoppen zijn gemaakt
+    updateNamen();
+};
 
     function updateNamen() {
         let speler1 = document.getElementById("speler1").value || "Speler 1";
