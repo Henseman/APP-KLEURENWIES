@@ -14,15 +14,15 @@
         }
         button {
             padding: 10px;
-            font-size: 16px;
             margin: 5px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
             border: none;
             cursor: pointer;
-            color: white;
-            width: 100px;
         }
         .inactive {
-            background-color: red;
+            background-color: darkred;
         }
         .active {
             background-color: green;
@@ -48,44 +48,41 @@
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
 
     <h3>Kies een contract:</h3>
-    <select id="contract" onchange="controleerContract()">
-        <option value="Samen 8">Samen 8</option>
-        <option value="Solo 5">Solo 5</option>
-        <option value="Samen 9">Samen 9</option>
-        <option value="Solo 6">Solo 6</option>
-        <option value="Samen 10">Samen 10</option>
-        <option value="Solo 7">Solo 7</option>
-        <option value="Samen 11">Samen 11</option>
-        <option value="Kleine Miserie">Kleine Miserie</option>
-        <option value="Samen 12">Samen 12</option>
-        <option value="Solo 8">Solo 8</option>
-        <option value="Piccolo">Piccolo</option>
-        <option value="Samen 13">Samen 13</option>
-        <option value="Solo 9">Solo 9</option>
-        <option value="Troel 8">Troel 8</option>
-        <option value="Grote Miserie">Grote Miserie</option>
-        <option value="Solo 10">Solo 10</option>
-        <option value="Solo 11">Solo 11</option>
-        <option value="Open Miserie">Open Miserie</option>
-        <option value="Solo 12">Solo 12</option>
-        <option value="Solo Slim 13">Solo Slim 13</option>
-    </select>
-    <br>
+    <div id="contracten">
+        <button class="contract" onclick="selectContract(this)">Samen 8</button>
+        <button class="contract" onclick="selectContract(this)">Solo 5</button>
+        <button class="contract" onclick="selectContract(this)">Samen 9</button>
+        <button class="contract" onclick="selectContract(this)">Solo 6</button>
+        <button class="contract" onclick="selectContract(this)">Samen 10</button>
+        <button class="contract" onclick="selectContract(this)">Solo 7</button>
+        <button class="contract" onclick="selectContract(this)">Samen 11</button>
+        <button class="contract" onclick="selectContract(this)">Kleine Miserie</button>
+        <button class="contract" onclick="selectContract(this)">Samen 12</button>
+        <button class="contract" onclick="selectContract(this)">Solo 8</button>
+        <button class="contract" onclick="selectContract(this)">Piccolo</button>
+        <button class="contract" onclick="selectContract(this)">Samen 13</button>
+        <button class="contract" onclick="selectContract(this)">Solo 9</button>
+        <button class="contract" onclick="selectContract(this)">Troel 8</button>
+        <button class="contract" onclick="selectContract(this)">Grote Miserie</button>
+        <button class="contract" onclick="selectContract(this)">Solo 10</button>
+        <button class="contract" onclick="selectContract(this)">Solo 11</button>
+        <button class="contract" onclick="selectContract(this)">Open Miserie</button>
+        <button class="contract" onclick="selectContract(this)">Solo 12</button>
+        <button class="contract" onclick="selectContract(this)">Solo Slim 13</button>
+    </div>
 
     <h3>Wie zet?</h3>
-    <div id="zetterButtons"></div>
-    <br>
+    <div id="zetters"></div>
 
     <h3>Wie speelt mee?</h3>
-    <div id="teamButtons"></div>
-    <br>
+    <div id="teamgenoten"></div>
 
     <h3>Behaalde slagen:</h3>
-    <div id="slagenButtons"></div>
-    <br>
+    <div id="slagen"></div>
+
     <button onclick="berekenScore()">Bereken Score</button>
     <button onclick="resetScores()">Reset Scores</button>
-    
+
     <h3>Huidige Scores:</h3>
     <table>
         <tr>
@@ -102,75 +99,65 @@
     <div id="historiek"></div>
 
     <script>
-        let zetter = null;
-        let teamgenoot = null;
-        let gekozenSlagen = null;
+        let geselecteerdContract = null;
 
-        function maakKnoppen() {
-            let spelers = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
-            let zetterDiv = document.getElementById("zetterButtons");
-            let teamDiv = document.getElementById("teamButtons");
-            let slagenDiv = document.getElementById("slagenButtons");
-            
-            zetterDiv.innerHTML = "";
-            teamDiv.innerHTML = "";
-            slagenDiv.innerHTML = "";
-            
-            spelers.forEach((speler, index) => {
-                let knop = document.createElement("button");
-                knop.innerText = speler;
-                knop.classList.add("inactive");
-                knop.onclick = function() { kiesZetter(index); };
-                zetterDiv.appendChild(knop);
-            });
-            
-            spelers.forEach((speler, index) => {
-                let knop = document.createElement("button");
-                knop.innerText = speler;
-                knop.classList.add("inactive");
-                knop.onclick = function() { kiesTeamgenoot(index); };
-                teamDiv.appendChild(knop);
-            });
-            
-            for (let i = 0; i <= 13; i++) {
-                let knop = document.createElement("button");
-                knop.innerText = i;
-                knop.classList.add("inactive");
-                knop.onclick = function() { kiesSlagen(i); };
-                slagenDiv.appendChild(knop);
+        function selectContract(button) {
+            if (geselecteerdContract) {
+                geselecteerdContract.classList.remove("active");
             }
+            geselecteerdContract = button;
+            geselecteerdContract.classList.add("active");
         }
 
-        function kiesZetter(index) {
-            zetter = index;
-            document.querySelectorAll("#zetterButtons button").forEach((knop, i) => {
-                knop.classList.toggle("active", i === index);
-            });
-            updateTeamKnoppen();
-        }
-
-        function kiesTeamgenoot(index) {
-            if (zetter !== null && index !== zetter) {
-                teamgenoot = index;
-                document.querySelectorAll("#teamButtons button").forEach((knop, i) => {
-                    knop.classList.toggle("active", i === index);
-                });
+        function berekenScore() {
+            if (!geselecteerdContract) {
+                alert("Selecteer een contract!");
+                return;
             }
+            
+            let contract = geselecteerdContract.innerText;
+            let slagen = parseInt(document.querySelector('.activeScore')?.innerText || "0");
+            let zetter = document.querySelector('.activeZetter')?.innerText;
+            let teamgenoten = Array.from(document.querySelectorAll('.activeTeamgenoot')).map(btn => btn.innerText);
+
+            fetch('/bereken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contract, slagen, zetter, teamgenoten })
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateScores(data.scores);
+                updateHistoriek(data.historiek);
+            })
+            .catch(error => console.error("Fout bij berekenen van score:", error));
         }
 
-        function kiesSlagen(aantal) {
-            gekozenSlagen = aantal;
-            document.querySelectorAll("#slagenButtons button").forEach(knop => knop.classList.remove("active"));
-            document.querySelector(`#slagenButtons button:nth-child(${aantal + 1})`).classList.add("active");
+        function resetScores() {
+            fetch('/reset', { method: 'POST' })
+            .then(() => {
+                alert("Scores gereset!");
+                location.reload();
+            })
+            .catch(error => console.error("Fout bij resetten van scores:", error));
         }
 
-        function updateTeamKnoppen() {
-            document.querySelectorAll("#teamButtons button").forEach((knop, i) => {
-                knop.classList.toggle("inactive", i === zetter);
+        function updateScores(scores) {
+            document.getElementById("score1").innerText = scores["Speler 1"];
+            document.getElementById("score2").innerText = scores["Speler 2"];
+            document.getElementById("score3").innerText = scores["Speler 3"];
+            document.getElementById("score4").innerText = scores["Speler 4"];
+        }
+
+        function updateHistoriek(historiek) {
+            let historiekDiv = document.getElementById("historiek");
+            historiekDiv.innerHTML = "";
+            historiek.forEach(entry => {
+                let p = document.createElement("p");
+                p.innerText = entry;
+                historiekDiv.appendChild(p);
             });
         }
-        
-        window.onload = maakKnoppen;
     </script>
 </body>
 </html>
