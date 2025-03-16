@@ -8,37 +8,37 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 20px;
             background-color: #2c3e50;
             color: white;
         }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
         }
-        .row {
-            display: flex;
-            gap: 10px;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-        }
-        button {
+        .btn {
+            padding: 15px;
+            font-size: 18px;
             background-color: #3498db;
             color: white;
-            min-width: 100px;
+            border: none;
+            cursor: pointer;
+            width: 100px;
+            height: 50px;
         }
-        button.active {
+        .btn.selected {
             background-color: green;
         }
-        button.disabled {
+        .btn.disabled {
             background-color: red;
-            cursor: not-allowed;
+            pointer-events: none;
+        }
+        input {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
         }
         table {
             width: 50%;
@@ -57,113 +57,94 @@
 </head>
 <body>
     <h2>Kleurenwies Score App</h2>
-    <div class="container">
-        <div class="row">
-            <input type="text" id="speler1" placeholder="Speler 1">
-            <input type="text" id="speler2" placeholder="Speler 2">
-            <input type="text" id="speler3" placeholder="Speler 3">
-            <input type="text" id="speler4" placeholder="Speler 4">
-        </div>
-        <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
-        <h3>Contract selecteren:</h3>
-        <div id="contractContainer" class="row"></div>
-        <h3>Wie zet?</h3>
-        <div id="zetterContainer" class="row"></div>
-        <h3>Wie speelt mee?</h3>
-        <div id="teamgenotenContainer" class="row"></div>
-        <h3>Behaalde slagen:</h3>
-        <div id="slagenContainer" class="row"></div>
-        <button id="berekenScore">Bereken Score</button>
-        <button id="resetScores">Reset Scores</button>
-    </div>
+    
+    <h3>Spelersnamen instellen:</h3>
+    <input type="text" id="speler1" placeholder="Speler 1" oninput="updateNamen()">
+    <input type="text" id="speler2" placeholder="Speler 2" oninput="updateNamen()">
+    <input type="text" id="speler3" placeholder="Speler 3" oninput="updateNamen()">
+    <input type="text" id="speler4" placeholder="Speler 4" oninput="updateNamen()">
+    
+    <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
+
+    <h3>Kies een contract:</h3>
+    <div class="button-grid" id="contracten"></div>
+    
+    <h3>Wie zet?</h3>
+    <div class="button-grid" id="zetter"></div>
+    
+    <h3>Wie speelt mee?</h3>
+    <div class="button-grid" id="teamgenoten"></div>
+
+    <h3>Behaalde slagen:</h3>
+    <div class="button-grid" id="slagen"></div>
+    
+    <br>
+    <button class="btn" onclick="berekenScore()">Bereken Score</button>
+    <button class="btn" onclick="resetScores()">Reset Scores</button>
+    
     <h3>Huidige Scores:</h3>
     <table>
-        <tr>
-            <th>Speler</th>
-            <th>Score</th>
-        </tr>
+        <tr><th>Speler</th><th>Score</th></tr>
         <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
         <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
         <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
         <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
     </table>
+
     <h3>Historiek:</h3>
     <div id="historiek"></div>
-    <script>
-        const contracts = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Grote Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
-        const spelers = ["1", "2", "3", "4"];
-        let gekozenContract = "";
-        let zetter = "";
-        let teamgenoten = [];
-        let behaaldeSlagen = 0;
 
-        function maakKnoppen(containerId, items, klikActie) {
-            const container = document.getElementById(containerId);
+    <script>
+        const contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Grote Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
+        const spelers = ["1", "2", "3", "4"];
+        let geselecteerdContract = "";
+        let geselecteerdeZetter = "";
+        let geselecteerdeTeamgenoten = [];
+        let geselecteerdeSlagen = 0;
+
+        function updateNamen() {
+            spelers.forEach(i => {
+                let naam = document.getElementById(`speler${i}`).value || `Speler ${i}`;
+                document.getElementById(`naam${i}`).innerText = naam;
+                document.querySelectorAll(`.btn[data-speler='${i}']`).forEach(btn => btn.innerText = naam);
+            });
+        }
+
+        function renderKnoppen(containerId, opties, isSpeler = false) {
+            let container = document.getElementById(containerId);
             container.innerHTML = "";
-            items.forEach(item => {
-                const btn = document.createElement("button");
-                btn.innerText = item;
-                btn.onclick = () => klikActie(btn, item);
+            opties.forEach(optie => {
+                let btn = document.createElement("button");
+                btn.classList.add("btn");
+                btn.innerText = isSpeler ? `Speler ${optie}` : optie;
+                btn.dataset.value = optie;
+                btn.onclick = () => selecteerKnop(containerId, optie);
                 container.appendChild(btn);
             });
         }
 
-        function selecteerContract(btn, contract) {
-            document.querySelectorAll("#contractContainer button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            gekozenContract = contract;
+        function selecteerKnop(containerId, waarde) {
+            document.querySelectorAll(`#${containerId} .btn`).forEach(btn => btn.classList.remove("selected"));
+            document.querySelector(`#${containerId} .btn[data-value='${waarde}']`).classList.add("selected");
+            if (containerId === "contracten") geselecteerdContract = waarde;
+            if (containerId === "zetter") geselecteerdeZetter = waarde;
+            if (containerId === "slagen") geselecteerdeSlagen = waarde;
         }
 
-        function selecteerZetter(btn, speler) {
-            document.querySelectorAll("#zetterContainer button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            zetter = speler;
-            teamgenoten = [];
-            maakTeamgenotenKnoppen();
+        function berekenScore() {
+            console.log("Score berekenen voor:", geselecteerdContract, geselecteerdeZetter, geselecteerdeSlagen);
+            document.getElementById("score1").innerText = parseInt(document.getElementById("score1").innerText) + 5;
         }
 
-        function selecteerTeamgenoot(btn, speler) {
-            if (teamgenoten.includes(speler)) {
-                teamgenoten = teamgenoten.filter(t => t !== speler);
-                btn.classList.remove("active");
-            } else if (teamgenoten.length < 1) {
-                teamgenoten.push(speler);
-                btn.classList.add("active");
-            }
+        function resetScores() {
+            document.querySelectorAll(".btn").forEach(btn => btn.classList.remove("selected"));
+            document.getElementById("score1").innerText = "0";
+            document.getElementById("historiek").innerText = "";
         }
 
-        function maakTeamgenotenKnoppen() {
-            const container = document.getElementById("teamgenotenContainer");
-            container.innerHTML = "";
-            spelers.forEach(speler => {
-                if (speler !== zetter) {
-                    const btn = document.createElement("button");
-                    btn.innerText = `Speler ${speler}`;
-                    btn.onclick = () => selecteerTeamgenoot(btn, speler);
-                    container.appendChild(btn);
-                }
-            });
-        }
-
-        function selecteerSlagen(btn, slagen) {
-            document.querySelectorAll("#slagenContainer button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            behaaldeSlagen = slagen;
-        }
-
-        function updateNamen() {
-            spelers.forEach((speler, index) => {
-                document.getElementById(`naam${speler}`).innerText = document.getElementById(`speler${speler}`).value || `Speler ${speler}`;
-            });
-        }
-
-        document.getElementById("berekenScore").onclick = () => {
-            console.log("Berekening: Contract", gekozenContract, "Zetter", zetter, "Teamgenoten", teamgenoten, "Slagen", behaaldeSlagen);
-        };
-
-        maakKnoppen("contractContainer", contracts, selecteerContract);
-        maakKnoppen("zetterContainer", spelers.map(s => `Speler ${s}`), selecteerZetter);
-        maakKnoppen("slagenContainer", Array.from({ length: 14 }, (_, i) => i), selecteerSlagen);
+        renderKnoppen("contracten", contracten);
+        renderKnoppen("zetter", spelers, true);
+        renderKnoppen("slagen", Array.from({length: 14}, (_, i) => i));
     </script>
 </body>
 </html>
