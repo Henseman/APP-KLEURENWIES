@@ -17,25 +17,50 @@
             margin: 5px;
             font-size: 16px;
         }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        .contract-button, .zetter-button, .teamgenoot-button, .score-button {
-            padding: 10px;
-            font-size: 16px;
+        .button-container button {
+            padding: 10px 20px;
             margin: 5px;
+            font-size: 16px;
             cursor: pointer;
             border: none;
             color: white;
+            background-color: #34495e;
         }
-        .active {
+        .button-container button.active {
             background-color: green;
         }
-        .inactive {
+        .button-container button.disabled {
             background-color: red;
+        }
+        table {
+            width: 50%;
+            margin: auto;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: darkred;
+            color: white;
+        }
+        #historiek {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -48,109 +73,93 @@
     <input type="text" id="speler3" placeholder="Speler 3">
     <input type="text" id="speler4" placeholder="Speler 4">
     <button onclick="updateNamen()">Update Namen</button>
-
+    
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
 
     <h3>Kies een contract:</h3>
-    <div id="contracten"></div>
+    <div class="button-container" id="contract-buttons"></div>
 
     <h3>Wie zet?</h3>
-    <div id="zetters"></div>
+    <div class="button-container" id="zetter-buttons"></div>
 
     <h3>Wie speelt mee?</h3>
-    <div id="teamgenoten"></div>
+    <div class="button-container" id="teamgenoten-buttons"></div>
 
     <h3>Behaalde slagen:</h3>
-    <div id="slagen"></div>
+    <div class="button-container" id="slagen-buttons"></div>
+    
+    <button onclick="berekenScore()">Bereken Score</button>
+    <button onclick="resetScores()">Reset Scores</button>
 
-    <br>
-    <button id="bereken" onclick="berekenScore()">Bereken Score</button>
-    <button id="reset" onclick="resetScores()">Reset Scores</button>
+    <h3>Huidige Scores:</h3>
+    <table>
+        <tr>
+            <th>Speler</th>
+            <th>Score</th>
+        </tr>
+        <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
+        <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
+        <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
+        <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
+    </table>
+
+    <h3>Historiek:</h3>
+    <div id="historiek"></div>
 
     <script>
-        let spelers = ["Speler 1", "Speler 2", "Speler 3", "Speler 4"];
-        let contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Grote Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
-        let gekozenContract = "";
-        let gekozenZetter = "";
-        let gekozenTeamgenoot = "";
-        let gekozenSlagen = -1;
-
         function updateNamen() {
-            spelers = [
-                document.getElementById("speler1").value || "Speler 1",
-                document.getElementById("speler2").value || "Speler 2",
-                document.getElementById("speler3").value || "Speler 3",
-                document.getElementById("speler4").value || "Speler 4"
-            ];
-            updateWeergave();
-        }
-
-        function updateWeergave() {
-            let contractenDiv = document.getElementById("contracten");
-            contractenDiv.innerHTML = "";
-            contracten.forEach(contract => {
-                let btn = document.createElement("button");
-                btn.innerText = contract;
-                btn.className = "contract-button";
-                btn.onclick = function() {
-                    gekozenContract = contract;
-                    document.querySelectorAll(".contract-button").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                };
-                contractenDiv.appendChild(btn);
-            });
-
-            let zettersDiv = document.getElementById("zetters");
-            zettersDiv.innerHTML = "";
-            spelers.forEach((speler, index) => {
-                let btn = document.createElement("button");
-                btn.innerText = speler;
-                btn.className = "zetter-button";
-                btn.onclick = function() {
-                    gekozenZetter = index;
-                    document.querySelectorAll(".zetter-button").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                    updateTeamgenoten();
-                };
-                zettersDiv.appendChild(btn);
-            });
-
-            updateTeamgenoten();
-
-            let slagenDiv = document.getElementById("slagen");
-            slagenDiv.innerHTML = "";
-            for (let i = 0; i <= 13; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = i;
-                btn.className = "score-button";
-                btn.onclick = function() {
-                    gekozenSlagen = i;
-                    document.querySelectorAll(".score-button").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                };
-                slagenDiv.appendChild(btn);
-            }
-        }
-
-        function updateTeamgenoten() {
-            let teamgenotenDiv = document.getElementById("teamgenoten");
-            teamgenotenDiv.innerHTML = "";
-            spelers.forEach((speler, index) => {
-                if (index !== gekozenZetter) {
-                    let btn = document.createElement("button");
-                    btn.innerText = speler;
-                    btn.className = "teamgenoot-button";
-                    btn.onclick = function() {
-                        document.querySelectorAll(".teamgenoot-button").forEach(b => b.classList.remove("active"));
-                        btn.classList.add("active");
-                        gekozenTeamgenoot = index;
-                    };
-                    teamgenotenDiv.appendChild(btn);
-                }
+            let spelers = {
+                "Speler 1": document.getElementById("speler1").value || "Speler 1",
+                "Speler 2": document.getElementById("speler2").value || "Speler 2",
+                "Speler 3": document.getElementById("speler3").value || "Speler 3",
+                "Speler 4": document.getElementById("speler4").value || "Speler 4"
+            };
+            fetch('/update_namen', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(spelers)
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateDropdowns();
             });
         }
 
-        window.onload = updateWeergave;
+        function berekenScore() {
+            fetch('/bereken', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                updateScores(data.scores);
+                updateHistoriek(data.historiek);
+            });
+        }
+
+        function updateScores(scores) {
+            document.getElementById("score1").innerText = scores["Speler 1"];
+            document.getElementById("score2").innerText = scores["Speler 2"];
+            document.getElementById("score3").innerText = scores["Speler 3"];
+            document.getElementById("score4").innerText = scores["Speler 4"];
+        }
+
+        function updateHistoriek(historiek) {
+            let historiekDiv = document.getElementById("historiek");
+            historiekDiv.innerHTML = "";
+            historiek.forEach(entry => {
+                let p = document.createElement("p");
+                p.innerText = entry;
+                historiekDiv.appendChild(p);
+            });
+        }
+
+        function resetScores() {
+            fetch('/reset', { method: 'POST' })
+            .then(() => {
+                alert("Scores gereset!");
+                updateDropdowns();
+            });
+        }
+
+        window.onload = updateDropdowns;
     </script>
 </body>
 </html>
