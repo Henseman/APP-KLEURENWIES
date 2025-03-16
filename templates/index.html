@@ -12,43 +12,27 @@
             background-color: #2c3e50;
             color: white;
         }
-        button {
+        .button {
             padding: 10px;
-            font-size: 16px;
             margin: 5px;
+            font-size: 16px;
             border: none;
             cursor: pointer;
+            width: 100px;
         }
-        .inactive {
-            background-color: red;
-        }
-        .active {
-            background-color: green;
-        }
-        .disabled {
-            background-color: grey;
-            cursor: not-allowed;
-        }
-        table {
-            width: 50%;
-            margin: auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid white;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: darkred;
+        .active { background-color: green; color: white; }
+        .inactive { background-color: red; color: white; }
+        .disabled { background-color: grey; color: white; pointer-events: none; }
+        .score-board {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h2>Kleurenwies Score App</h2>
-
+    
     <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
-
+    
     <h3>Kies een contract:</h3>
     <select id="contract" onchange="controleerContract()">
         <option value="Samen 8">Samen 8</option>
@@ -59,120 +43,90 @@
         <option value="Solo 7">Solo 7</option>
         <option value="Samen 11">Samen 11</option>
         <option value="Kleine Miserie">Kleine Miserie</option>
-        <option value="Samen 12">Samen 12</option>
-        <option value="Solo 8">Solo 8</option>
-        <option value="Piccolo">Piccolo</option>
-        <option value="Samen 13">Samen 13</option>
-        <option value="Solo 9">Solo 9</option>
-        <option value="Troel 8">Troel 8</option>
-        <option value="Grote Miserie">Grote Miserie</option>
-        <option value="Solo 10">Solo 10</option>
-        <option value="Solo 11">Solo 11</option>
-        <option value="Open Miserie">Open Miserie</option>
-        <option value="Solo 12">Solo 12</option>
-        <option value="Solo Slim 13">Solo Slim 13</option>
     </select>
-
+    
     <h3>Wie zet?</h3>
-    <div id="zetterKnoppen"></div>
-
+    <div id="zetter-buttons">
+        <button class="button inactive" id="zetter1" onclick="kiesZetter(1)">Speler 1</button>
+        <button class="button inactive" id="zetter2" onclick="kiesZetter(2)">Speler 2</button>
+        <button class="button inactive" id="zetter3" onclick="kiesZetter(3)">Speler 3</button>
+        <button class="button inactive" id="zetter4" onclick="kiesZetter(4)">Speler 4</button>
+    </div>
+    
     <h3>Wie speelt mee?</h3>
-    <div id="teamKnoppen"></div>
-
+    <div id="team-buttons">
+        <button class="button inactive" id="team1" onclick="kiesTeamgenoot(1)">Speler 1</button>
+        <button class="button inactive" id="team2" onclick="kiesTeamgenoot(2)">Speler 2</button>
+        <button class="button inactive" id="team3" onclick="kiesTeamgenoot(3)">Speler 3</button>
+        <button class="button inactive" id="team4" onclick="kiesTeamgenoot(4)">Speler 4</button>
+    </div>
+    
     <h3>Behaalde slagen:</h3>
-    <div id="slagenKnoppen"></div>
-
+    <div id="slagen-buttons">
+        <button class="button inactive" onclick="kiesSlagen(0)">0</button>
+        <button class="button inactive" onclick="kiesSlagen(1)">1</button>
+        <button class="button inactive" onclick="kiesSlagen(2)">2</button>
+        <button class="button inactive" onclick="kiesSlagen(3)">3</button>
+        <button class="button inactive" onclick="kiesSlagen(4)">4</button>
+        <button class="button inactive" onclick="kiesSlagen(5)">5</button>
+    </div>
+    
     <br>
     <button onclick="berekenScore()">Bereken Score</button>
     <button onclick="resetScores()">Reset Scores</button>
     
-    <h3>Huidige Scores:</h3>
-    <table>
-        <tr>
-            <th>Speler</th>
-            <th>Score</th>
-        </tr>
-        <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
-        <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
-        <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
-        <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
-    </table>
-
-    <h3>Historiek:</h3>
-    <div id="historiek"></div>
-
+    <div class="score-board">
+        <h3>Huidige Scores:</h3>
+        <p>Speler 1: <span id="score1">0</span></p>
+        <p>Speler 2: <span id="score2">0</span></p>
+        <p>Speler 3: <span id="score3">0</span></p>
+        <p>Speler 4: <span id="score4">0</span></p>
+    </div>
+    
     <script>
-        let namen = {"1": "Speler 1", "2": "Speler 2", "3": "Speler 3", "4": "Speler 4"};
-        let zetter = null;
-        let teamgenoten = [];
+        let geselecteerdeZetter = null;
+        let geselecteerdeTeamgenoot = null;
         let geselecteerdeSlagen = null;
-
-        function updateKnoppen() {
-            let zetterDiv = document.getElementById("zetterKnoppen");
-            let teamDiv = document.getElementById("teamKnoppen");
-            let slagenDiv = document.getElementById("slagenKnoppen");
-
-            zetterDiv.innerHTML = "";
-            teamDiv.innerHTML = "";
-            slagenDiv.innerHTML = "";
-
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = namen[i];
-                btn.classList.add("inactive");
-                btn.onclick = function() { selectZetter(i, btn); };
-                zetterDiv.appendChild(btn);
-            }
-
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = namen[i];
-                btn.classList.add("inactive");
-                btn.onclick = function() { selectTeamgenoot(i, btn); };
-                teamDiv.appendChild(btn);
-            }
-
-            for (let i = 0; i <= 13; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = i;
-                btn.classList.add("inactive");
-                btn.onclick = function() { selectSlagen(i, btn); };
-                slagenDiv.appendChild(btn);
+        
+        function kiesZetter(speler) {
+            document.querySelectorAll('#zetter-buttons .button').forEach(btn => btn.classList.replace('active', 'inactive'));
+            document.getElementById(`zetter${speler}`).classList.replace('inactive', 'active');
+            geselecteerdeZetter = speler;
+        }
+        
+        function kiesTeamgenoot(speler) {
+            if (!document.getElementById(`team${speler}`).classList.contains('disabled')) {
+                if (geselecteerdeTeamgenoot) {
+                    document.getElementById(`team${geselecteerdeTeamgenoot}`).classList.replace('active', 'inactive');
+                }
+                geselecteerdeTeamgenoot = speler;
+                document.getElementById(`team${speler}`).classList.replace('inactive', 'active');
             }
         }
-
-        function selectZetter(id, btn) {
-            zetter = id;
-            document.querySelectorAll("#zetterKnoppen button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            controleerContract();
+        
+        function kiesSlagen(aantal) {
+            document.querySelectorAll('#slagen-buttons .button').forEach(btn => btn.classList.replace('active', 'inactive'));
+            event.target.classList.replace('inactive', 'active');
+            geselecteerdeSlagen = aantal;
         }
-
-        function selectTeamgenoot(id, btn) {
-            if (teamgenoten.includes(id)) {
-                teamgenoten = teamgenoten.filter(t => t !== id);
-                btn.classList.remove("active");
-            } else {
-                teamgenoten.push(id);
-                btn.classList.add("active");
-            }
-        }
-
-        function selectSlagen(id, btn) {
-            geselecteerdeSlagen = id;
-            document.querySelectorAll("#slagenKnoppen button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-        }
-
+        
         function controleerContract() {
             let contract = document.getElementById("contract").value;
-            let isSolo = contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo");
-            document.querySelectorAll("#teamKnoppen button").forEach(btn => {
-                btn.classList.toggle("disabled", isSolo || btn.innerText === namen[zetter]);
+            let isTeam = contract.includes("Samen");
+            
+            document.querySelectorAll('#team-buttons .button').forEach(btn => {
+                btn.classList.replace('active', 'inactive');
+                btn.classList.remove('disabled');
             });
+            
+            if (!isTeam) {
+                document.querySelectorAll('#team-buttons .button').forEach(btn => btn.classList.add('disabled'));
+            }
         }
-
-        updateKnoppen();
+        
+        function berekenScore() {
+            console.log("Score berekenen: Zetter", geselecteerdeZetter, "Teamgenoot", geselecteerdeTeamgenoot, "Slagen", geselecteerdeSlagen);
+        }
     </script>
 </body>
 </html>
