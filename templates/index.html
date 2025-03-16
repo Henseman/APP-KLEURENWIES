@@ -197,6 +197,61 @@ window.onload = function() {
     document.getElementById("speler2").addEventListener("input", updateNamen);
     document.getElementById("speler3").addEventListener("input", updateNamen);
     document.getElementById("speler4").addEventListener("input", updateNamen);
+
+    function updateTeamgenoten() {
+    let contractButton = document.querySelector("#contracten button.active"); // Haal het geselecteerde contract op
+    let contract = contractButton ? contractButton.innerText : ""; // Contract naam
+
+    let teamSpel = contract.includes("Samen"); // Controleert of het een teamspel is
+    let soloSpel = contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo");
+
+    let zetterButton = document.querySelector("#zetter button.active"); // Haal de geselecteerde zetter op
+    let zetter = zetterButton ? zetterButton.dataset.speler : null; // Haal speler-nummer op
+
+    let teamgenotenButtons = document.querySelectorAll("#teamgenoten button");
+
+    teamgenotenButtons.forEach(btn => {
+        btn.classList.remove("active"); // Reset de knoppen
+        btn.disabled = false; // Zorgt ervoor dat ze opnieuw klikbaar zijn
+        btn.style.backgroundColor = "#3498db"; // Standaard kleur
+
+        if (soloSpel) {
+            btn.disabled = true; // Bij een solo-spel mogen geen teamgenoten worden gekozen
+            btn.style.backgroundColor = "#e74c3c"; // Rode kleur voor niet-beschikbaar
+        } else if (teamSpel) {
+            if (btn.dataset.speler === zetter) {
+                btn.disabled = true; // Zetter mag niet gekozen worden als teamgenoot
+                btn.style.backgroundColor = "#e74c3c";
+            }
+        }
+    });
+
+    let geselecteerdeTeamgenoten = [];
+    teamgenotenButtons.forEach(btn => {
+        btn.onclick = function() {
+            if (!soloSpel) {
+                if (btn.classList.contains("active")) {
+                    btn.classList.remove("active");
+                    geselecteerdeTeamgenoten = geselecteerdeTeamgenoten.filter(speler => speler !== btn.dataset.speler);
+                } else {
+                    if (geselecteerdeTeamgenoten.length < 1) {
+                        btn.classList.add("active");
+                        geselecteerdeTeamgenoten.push(btn.dataset.speler);
+                    }
+                }
+            }
+        };
+    });
+}
+
+// ** Activeren van de functie zodra een contract of zetter wordt gekozen **
+document.querySelectorAll("#contracten button").forEach(button => {
+    button.addEventListener("click", updateTeamgenoten);
+});
+
+document.querySelectorAll("#zetter button").forEach(button => {
+    button.addEventListener("click", updateTeamgenoten);
+});       
 </script>
 </body>
 </html>
