@@ -200,13 +200,13 @@ window.onload = function() {
 
 function updateTeamgenoten() {
     let contractButton = document.querySelector("#contracten button.active");
-    let contract = contractButton ? contractButton.innerText : ""; 
+    let contract = contractButton ? contractButton.innerText : "";
 
     let teamSpel = contract.includes("Samen");
     let soloSpel = contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo");
 
-    let zetterButton = document.querySelector("#zetter button.active"); 
-    let zetter = zetterButton ? zetterButton.dataset.speler : null; 
+    let zetterButton = document.querySelector("#zetter button.active");
+    let zetter = zetterButton ? zetterButton.dataset.speler : null;
 
     let teamgenotenButtons = document.querySelectorAll("#teamgenoten button");
 
@@ -219,18 +219,18 @@ function updateTeamgenoten() {
         btn.style.backgroundColor = "#3498db";
 
         if (soloSpel) {
-            // ❌ Solo-spel: geen teamgenoten selecteerbaar
+            // ❌ Solo-spel: geen teamgenoten mogelijk
             btn.disabled = true;
             btn.style.backgroundColor = "#e74c3c";
         } else if (teamSpel) {
             if (btn.dataset.speler === zetter) {
-                // ❌ Team-spel: zetter mag niet als teamgenoot gekozen worden
+                // ❌ Team-spel: zetter mag niet gekozen worden
                 btn.disabled = true;
                 btn.style.backgroundColor = "#e74c3c";
             }
         }
 
-        // ✅ Event listener: Beheer selectie van teamgenoten
+        // ✅ Klikfunctionaliteit voor teamgenoten
         btn.onclick = function() {
             if (!soloSpel) {
                 if (btn.classList.contains("active")) {
@@ -250,7 +250,8 @@ function updateTeamgenoten() {
         };
     });
 }
-// ** Activeren van de functie zodra een contract of zetter wordt gekozen **
+
+// ** Update teamgenoten wanneer een contract of zetter wordt gekozen **
 document.querySelectorAll("#contracten button").forEach(button => {
     button.addEventListener("click", updateTeamgenoten);
 });
