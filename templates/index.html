@@ -138,7 +138,6 @@ function berekenScore() {
     let zetterButton = document.querySelector("#zetter button.active");
     let slagenButton = document.querySelector("#slagen button.active");
 
-    // ✅ **Check of alle verplichte velden zijn ingevuld**
     if (!contractButton) {
         alert("❌ Kies een contract!");
         return;
@@ -156,11 +155,71 @@ function berekenScore() {
     let zetter = zetterButton.dataset.speler;
     let behaaldeSlagen = parseInt(slagenButton.innerText);
 
-    // ✅ **Teamgenoten ophalen**
     let teamgenoten = [];
     document.querySelectorAll("#teamgenoten button.active").forEach(btn => {
         teamgenoten.push(btn.dataset.speler);
     });
+
+    let contractInfo = puntenTabel[contract];
+
+    if (!contractInfo) {
+        alert("⚠️ Fout: Contract niet gevonden in puntenlijst!");
+        return;
+    }
+
+    // ✅ **Nieuwe berekening met extra slagen**
+    let geslaagdePunten;
+    if (behaaldeSlagen >= contractInfo.minimum) {
+        let extraSlagen = behaaldeSlagen - contractInfo.minimum;
+        geslaagdePunten = contractInfo.basispunten + (extraSlagen * contractInfo.overslag);
+    } else {
+        geslaagdePunten = contractInfo.verlies;
+    }
+
+    let spelerScores = {
+        "1": parseInt(document.getElementById("score1").innerText),
+        "2": parseInt(document.getElementById("score2").innerText),
+        "3": parseInt(document.getElementById("score3").innerText),
+        "4": parseInt(document.getElementById("score4").innerText)
+    };
+
+    if (contractInfo.team) {
+        spelerScores[zetter] += geslaagdePunten;
+        teamgenoten.forEach(speler => {
+            spelerScores[speler] += geslaagdePunten;
+        });
+
+        let tegenstanders = ["1", "2", "3", "4"].filter(speler => ![zetter, ...teamgenoten].includes(speler));
+        tegenstanders.forEach(speler => {
+            spelerScores[speler] -= geslaagdePunten;
+        });
+
+    } else {
+        spelerScores[zetter] += geslaagdePunten * 3;
+        let tegenstanders = ["1", "2", "3", "4"].filter(speler => speler !== zetter);
+        tegenstanders.forEach(speler => {
+            spelerScores[speler] -= geslaagdePunten;
+        });
+    }
+
+    document.getElementById("score1").innerText = spelerScores["1"];
+    document.getElementById("score2").innerText = spelerScores["2"];
+    document.getElementById("score3").innerText = spelerScores["3"];
+    document.getElementById("score4").innerText = spelerScores["4"];
+
+    let teamgenootNamen = teamgenoten.map(speler => document.querySelector(`#speler${speler}`).value).join(", ") || "Geen";
+    let zetterNaam = document.querySelector(`#speler${zetter}`).value;
+
+    let historiekDiv = document.getElementById("historiek");
+    let nieuweHistoriek = document.createElement("p");
+    nieuweHistoriek.innerText = `Ronde ${document.getElementById("ronde").innerText}: ${contract}, Zetter: ${zetterNaam}, Team: ${teamgenootNamen}, Punten: ${geslaagdePunten}`;
+    historiekDiv.prepend(nieuweHistoriek);
+
+    let huidigeRonde = parseInt(document.getElementById("ronde").innerText);
+    document.getElementById("ronde").innerText = huidigeRonde + 1;
+    let nieuweGever = (parseInt(document.getElementById("gever").innerText.split(" ")[1]) % 4) + 1;
+    document.getElementById("gever").innerText = `Speler ${nieuweGever}`;
+}
 
     // ✅ **Scorelogica toepassen**
     let puntenTabel = {
