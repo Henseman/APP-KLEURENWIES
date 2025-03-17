@@ -469,7 +469,16 @@ function resetScores() {
     });
 
     alert("✅ Scores en instellingen zijn gereset!");
-}  
+
+    // Na reset: opnieuw event listeners toevoegen voor contracten
+   document.querySelectorAll("#contracten button").forEach(button => {
+       button.addEventListener("click", function () {
+           document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
+           button.classList.add("active");
+           updateTeamgenoten();
+       });
+   });
+    }  
 </script>
 </body>
 </html>
