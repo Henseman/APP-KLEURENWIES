@@ -381,7 +381,34 @@ document.querySelectorAll("#contracten button").forEach(button => {
 
 document.querySelectorAll("#zetter button").forEach(button => {
     button.addEventListener("click", updateTeamgenoten);
-});       
+});      
+function resetScores() {
+    // ✅ Zet scores terug naar 0
+    document.getElementById("score1").innerText = "0";
+    document.getElementById("score2").innerText = "0";
+    document.getElementById("score3").innerText = "0";
+    document.getElementById("score4").innerText = "0";
+
+    // ✅ Reset de historiek
+    document.getElementById("historiek").innerHTML = "";
+
+    // ✅ Reset ronde en gever
+    document.getElementById("ronde").innerText = "1";
+    document.getElementById("gever").innerText = "Speler 1";
+
+    // ✅ Reset geselecteerde knoppen
+    document.querySelectorAll(".button-group button").forEach(btn => {
+        btn.classList.remove("active");
+        btn.style.backgroundColor = "#3498db"; // Standaard blauwe kleur
+    });
+
+    // ✅ Zorg ervoor dat alle knoppen opnieuw bruikbaar zijn
+    document.querySelectorAll("#teamgenoten button").forEach(btn => {
+        btn.disabled = false;
+    });
+
+    alert("✅ Scores zijn gereset!");
+}       
 </script>
 </body>
 </html>
