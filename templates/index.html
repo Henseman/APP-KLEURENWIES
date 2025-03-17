@@ -455,10 +455,10 @@ function resetScores() {
     document.getElementById("gever").innerText = "Speler 1";
 
     // ✅ Verwijder de actieve status van ALLE knoppen
-    document.querySelectorAll(".button-group button").forEach(btn => {
-        btn.classList.remove("active");
-        btn.disabled = false; // Zorgt ervoor dat de knoppen opnieuw klikbaar zijn
-        btn.style.backgroundColor = "#3498db"; // Standaard blauwe kleur
+    document.querySelectorAll("#contracten button").forEach(btn => {
+        btn.classList.remove("active"); // Verwijder actieve status
+        btn.disabled = false; // Zorg dat ze opnieuw klikbaar zijn
+        btn.style.backgroundColor = "#3498db"; // Standaard kleur terugzetten
     });
 
     // ✅ Reset ook contract-knoppen, zodat je een nieuw contract kunt kiezen
