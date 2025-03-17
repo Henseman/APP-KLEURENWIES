@@ -46,6 +46,7 @@
         }
         button.disabled {
             background-color: #e74c3c;
+            cursor: not-allowed;
         }
         table {
             width: 100%;
@@ -75,7 +76,7 @@
         
         <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
         
-        <h3>Contracten</h3>
+        <h3>Kies contract:</h3>
         <div class="button-group" id="contracten"></div>
         
         <h3>Wie zet?</h3>
@@ -107,44 +108,56 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             maakKnoppen();
-            updateNamen();
         });
 
         function maakKnoppen() {
-            const contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
-            const contractDiv = document.getElementById("contracten");
+            let contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
+            let contractenDiv = document.getElementById("contracten");
             contracten.forEach(contract => {
                 let btn = document.createElement("button");
                 btn.innerText = contract;
                 btn.onclick = function() {
                     document.querySelectorAll('#contracten button').forEach(btn => btn.classList.remove('active'));
                     btn.classList.add('active');
+                    updateTeamgenoten();
                 };
-                contractDiv.appendChild(btn);
+                contractenDiv.appendChild(btn);
             });
 
             let zetterDiv = document.getElementById("zetter");
+            let teamgenotenDiv = document.getElementById("teamgenoten");
             for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = "Speler " + i;
-                btn.onclick = function() {
+                let btnZetter = document.createElement("button");
+                btnZetter.innerText = "Speler " + i;
+                btnZetter.dataset.speler = i;
+                btnZetter.onclick = function() {
                     document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
-                    btn.classList.add('active');
+                    btnZetter.classList.add('active');
+                    updateTeamgenoten();
                 };
-                zetterDiv.appendChild(btn);
+                zetterDiv.appendChild(btnZetter);
+
+                let btnTeamgenoot = document.createElement("button");
+                btnTeamgenoot.innerText = "Speler " + i;
+                btnTeamgenoot.dataset.speler = i;
+                btnTeamgenoot.onclick = function() {
+                    btnTeamgenoot.classList.toggle('active');
+                };
+                teamgenotenDiv.appendChild(btnTeamgenoot);
             }
         }
 
-        function updateNamen() {
-            let namen = ["speler1", "speler2", "speler3", "speler4"].map(id => document.getElementById(id).value || id.replace("speler", "Speler "));
-            document.querySelectorAll("#zetter button, #teamgenoten button").forEach((btn, index) => btn.innerText = namen[index % 4]);
-            document.querySelectorAll("#naam1, #naam2, #naam3, #naam4").forEach((td, index) => td.innerText = namen[index]);
+        function updateTeamgenoten() {
+            let contract = document.querySelector("#contracten button.active");
+            let teamgenotenButtons = document.querySelectorAll("#teamgenoten button");
+            teamgenotenButtons.forEach(btn => {
+                btn.classList.remove("active");
+                btn.disabled = contract && contract.innerText.includes("Solo");
+                btn.style.backgroundColor = btn.disabled ? "#e74c3c" : "#3498db";
+            });
         }
-
-        ["speler1", "speler2", "speler3", "speler4"].forEach(id => document.getElementById(id).addEventListener("input", updateNamen));
-
     </script>
 </body>
 </html>
