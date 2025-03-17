@@ -21,7 +21,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-        .button-group {
+        .input-group, .button-group {
             margin-bottom: 15px;
         }
         input, button {
@@ -63,11 +63,24 @@
     <div class="container">
         <h2>Kleurenwies Score App</h2>
         
+        <div class="input-group">
+            <input type="text" id="speler1" placeholder="Speler 1">
+            <input type="text" id="speler2" placeholder="Speler 2">
+            <input type="text" id="speler3" placeholder="Speler 3">
+            <input type="text" id="speler4" placeholder="Speler 4">
+        </div>
+        
+        <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
+        
+        <h3>Contracten:</h3>
         <div class="button-group" id="contracten"></div>
+        
         <h3>Wie zet?</h3>
         <div class="button-group" id="zetter"></div>
+        
         <h3>Wie speelt mee?</h3>
         <div class="button-group" id="teamgenoten"></div>
+        
         <h3>Behaalde slagen:</h3>
         <div class="button-group" id="slagen"></div>
         
@@ -75,61 +88,49 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            maakKnoppen();
+        });
+
         function maakKnoppen() {
-            let contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
-            let contractenDiv = document.getElementById("contracten");
-            contracten.forEach(contract => {
-                let btn = document.createElement("button");
-                btn.innerText = contract;
-                btn.onclick = function() {
-                    document.querySelectorAll('#contracten button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-                contractenDiv.appendChild(btn);
+            const contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
+            vulKnoppen("contracten", contracten, selecteerContract);
+            vulKnoppen("zetter", ["Speler 1", "Speler 2", "Speler 3", "Speler 4"], selecteerKnop);
+            vulKnoppen("teamgenoten", ["Speler 1", "Speler 2", "Speler 3", "Speler 4"], toggleKnop);
+            vulKnoppen("slagen", Array.from({ length: 14 }, (_, i) => i), selecteerKnop);
+        }
+
+        function vulKnoppen(divId, opties, klikFunctie) {
+            const container = document.getElementById(divId);
+            container.innerHTML = "";
+            opties.forEach(optie => {
+                const knop = document.createElement("button");
+                knop.innerText = optie;
+                knop.addEventListener("click", function() { klikFunctie(knop); });
+                container.appendChild(knop);
             });
+        }
 
-            let zetterDiv = document.getElementById("zetter");
-            let teamgenotenDiv = document.getElementById("teamgenoten");
-            let slagenDiv = document.getElementById("slagen");
+        function selecteerKnop(knop) {
+            const container = knop.parentElement;
+            container.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+            knop.classList.add("active");
+        }
 
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = "Speler " + i;
-                btn.onclick = function() {
-                    document.querySelectorAll('#zetter button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-                zetterDiv.appendChild(btn);
-            }
+        function toggleKnop(knop) {
+            knop.classList.toggle("active");
+        }
 
-            for (let i = 1; i <= 4; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = "Speler " + i;
-                btn.onclick = function() {
-                    btn.classList.toggle('active');
-                };
-                teamgenotenDiv.appendChild(btn);
-            }
-
-            for (let i = 0; i <= 13; i++) {
-                let btn = document.createElement("button");
-                btn.innerText = i;
-                btn.onclick = function() {
-                    document.querySelectorAll('#slagen button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-                slagenDiv.appendChild(btn);
-            }
+        function selecteerContract(knop) {
+            document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
+            knop.classList.add("active");
         }
 
         function resetScores() {
-            document.querySelectorAll("button").forEach(btn => {
-                btn.classList.remove("active");
-            });
-            alert("Scores en instellingen zijn gereset!");
+            document.getElementById("ronde").innerText = "1";
+            document.getElementById("gever").innerText = "Speler 1";
+            document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
         }
-        
-        window.onload = maakKnoppen;
     </script>
 </body>
 </html>
