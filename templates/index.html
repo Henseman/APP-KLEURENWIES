@@ -21,7 +21,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-        .input-group, .button-group {
+        .button-group {
             margin-bottom: 15px;
         }
         input, button {
@@ -44,9 +44,6 @@
         button.active {
             background-color: #27ae60;
         }
-        button.disabled {
-            background-color: #e74c3c;
-        }
         table {
             width: 100%;
             margin-top: 20px;
@@ -66,101 +63,57 @@
     <div class="container">
         <h2>Kleurenwies Score App</h2>
         
-        <div class="input-group">
-            <input type="text" id="speler1" placeholder="Speler 1">
-            <input type="text" id="speler2" placeholder="Speler 2">
-            <input type="text" id="speler3" placeholder="Speler 3">
-            <input type="text" id="speler4" placeholder="Speler 4">
-        </div>
-        
-        <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
-
-        <h3>Contracten</h3>
         <div class="button-group" id="contracten"></div>
-
         <h3>Wie zet?</h3>
         <div class="button-group" id="zetter"></div>
-
         <h3>Wie speelt mee?</h3>
         <div class="button-group" id="teamgenoten"></div>
-
         <h3>Behaalde slagen:</h3>
         <div class="button-group" id="slagen"></div>
         
-        <button onclick="berekenScore()" style="background-color: #1abc9c; width: 100%;">Bereken Score</button>
         <button onclick="resetScores()" style="background-color: #e74c3c; width: 100%;">Reset Scores</button>
-        
-        <h3>Huidige Scores:</h3>
-        <table>
-            <tr>
-                <th>Speler</th>
-                <th>Score</th>
-            </tr>
-            <tr><td id="naam1">Speler 1</td><td id="score1">0</td></tr>
-            <tr><td id="naam2">Speler 2</td><td id="score2">0</td></tr>
-            <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
-            <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
-        </table>
-
-        <h3>Historiek:</h3>
-        <div id="historiek"></div>
     </div>
 
     <script>
-        let contractOpties = [
-            "Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7",
-            "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo",
-            "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10",
-            "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"
-        ];
-
         function maakKnoppen() {
+            let contracten = ["Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7", "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo", "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10", "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"];
             let contractenDiv = document.getElementById("contracten");
-            let zetterDiv = document.getElementById("zetter");
-            let teamgenotenDiv = document.getElementById("teamgenoten");
-            let slagenDiv = document.getElementById("slagen");
-
-            contractenDiv.innerHTML = "";
-            contractOpties.forEach(contract => {
+            contracten.forEach(contract => {
                 let btn = document.createElement("button");
                 btn.innerText = contract;
                 btn.onclick = function() {
-                    document.querySelectorAll("#contracten button").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                    updateTeamgenoten();
+                    document.querySelectorAll('#contracten button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
                 };
                 contractenDiv.appendChild(btn);
             });
 
-            zetterDiv.innerHTML = "";
+            let zetterDiv = document.getElementById("zetter");
+            let teamgenotenDiv = document.getElementById("teamgenoten");
+            let slagenDiv = document.getElementById("slagen");
+
             for (let i = 1; i <= 4; i++) {
                 let btn = document.createElement("button");
                 btn.innerText = "Speler " + i;
-                btn.dataset.speler = i;
                 btn.onclick = function() {
                     document.querySelectorAll('#zetter button').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    updateTeamgenoten();
                 };
                 zetterDiv.appendChild(btn);
             }
 
-            teamgenotenDiv.innerHTML = "";
             for (let i = 1; i <= 4; i++) {
                 let btn = document.createElement("button");
                 btn.innerText = "Speler " + i;
-                btn.dataset.speler = i;
                 btn.onclick = function() {
                     btn.classList.toggle('active');
                 };
                 teamgenotenDiv.appendChild(btn);
             }
 
-            slagenDiv.innerHTML = "";
             for (let i = 0; i <= 13; i++) {
                 let btn = document.createElement("button");
                 btn.innerText = i;
-                btn.dataset.slagen = i;
                 btn.onclick = function() {
                     document.querySelectorAll('#slagen button').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -170,26 +123,13 @@
         }
 
         function resetScores() {
-            document.getElementById("score1").innerText = "0";
-            document.getElementById("score2").innerText = "0";
-            document.getElementById("score3").innerText = "0";
-            document.getElementById("score4").innerText = "0";
-            document.getElementById("historiek").innerHTML = "";
-            document.getElementById("ronde").innerText = "1";
-            document.getElementById("gever").innerText = "Speler 1";
-
             document.querySelectorAll("button").forEach(btn => {
                 btn.classList.remove("active");
-                btn.disabled = false;
-                btn.style.backgroundColor = "#3498db";
             });
-
-            maakKnoppen();
+            alert("Scores en instellingen zijn gereset!");
         }
-
-        window.onload = function() {
-            maakKnoppen();
-        };
+        
+        window.onload = maakKnoppen;
     </script>
 </body>
 </html>
