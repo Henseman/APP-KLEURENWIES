@@ -396,19 +396,22 @@ function resetScores() {
     document.getElementById("ronde").innerText = "1";
     document.getElementById("gever").innerText = "Speler 1";
 
-    // ✅ Reset geselecteerde knoppen
+    // ✅ Verwijder de actieve status van ALLE knoppen
     document.querySelectorAll(".button-group button").forEach(btn => {
         btn.classList.remove("active");
+        btn.disabled = false; // Zorgt ervoor dat de knoppen opnieuw klikbaar zijn
         btn.style.backgroundColor = "#3498db"; // Standaard blauwe kleur
     });
 
-    // ✅ Zorg ervoor dat alle knoppen opnieuw bruikbaar zijn
-    document.querySelectorAll("#teamgenoten button").forEach(btn => {
-        btn.disabled = false;
+    // ✅ Reset ook contract-knoppen, zodat je een nieuw contract kunt kiezen
+    document.querySelectorAll("#contracten button").forEach(btn => {
+        btn.classList.remove("active"); // Verwijder actieve status
+        btn.disabled = false; // Zorg dat ze opnieuw klikbaar zijn
+        btn.style.backgroundColor = "#3498db"; // Standaard kleur terugzetten
     });
 
-    alert("✅ Scores zijn gereset!");
-}       
+    alert("✅ Scores en instellingen zijn gereset!");
+}  
 </script>
 </body>
 </html>
