@@ -454,30 +454,24 @@ function resetScores() {
     document.getElementById("ronde").innerText = "1";
     document.getElementById("gever").innerText = "Speler 1";
 
-    // ✅ Verwijder de actieve status van ALLE knoppen
-    document.querySelectorAll("#contracten button").forEach(btn => {
-        btn.classList.remove("active"); // Verwijder actieve status
-        btn.disabled = false; // Zorg dat ze opnieuw klikbaar zijn
-        btn.style.backgroundColor = "#3498db"; // Standaard kleur terugzetten
-    });
-
-    // ✅ Reset ook contract-knoppen, zodat je een nieuw contract kunt kiezen
-    document.querySelectorAll("#contracten button").forEach(btn => {
-        btn.classList.remove("active"); // Verwijder actieve status
-        btn.disabled = false; // Zorg dat ze opnieuw klikbaar zijn
-        btn.style.backgroundColor = "#3498db"; // Standaard kleur terugzetten
+    // ✅ Verwijder de actieve status van ALLE knoppen en maak ze opnieuw klikbaar
+    document.querySelectorAll("button").forEach(btn => {
+        btn.classList.remove("active"); 
+        btn.disabled = false; 
+        btn.style.backgroundColor = "#3498db"; 
     });
 
     alert("✅ Scores en instellingen zijn gereset!");
 
-   // ✅ Opnieuw event listeners toevoegen voor contracten
-document.querySelectorAll("#contracten button").forEach(button => {
-    button.onclick = function () {
-        document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
-        button.classList.add("active");
-        updateTeamgenoten();
-    };
-});
+    // ✅ Opnieuw event listeners toevoegen voor contract-knoppen
+    document.querySelectorAll("#contracten button").forEach(button => {
+        button.onclick = function () {
+            document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+            updateTeamgenoten(); // 🛠️ Belangrijk: Zorg dat teamgenoten weer correct werken
+        };
+    });
+}
 </script>
 </body>
 </html>
