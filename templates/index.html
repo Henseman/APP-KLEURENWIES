@@ -466,11 +466,30 @@ function resetScores() {
     // ✅ Opnieuw event listeners toevoegen voor contract-knoppen
     document.querySelectorAll("#contracten button").forEach(button => {
         button.onclick = function () {
-            document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
+            // Eerst alle contracten deactiveerbaar maken
+            document.querySelectorAll("#contracten button").forEach(btn => {
+                btn.classList.remove("active");
+                btn.disabled = false;
+                btn.style.backgroundColor = "#3498db";
+            });
+
+            // Activeer het geselecteerde contract
             button.classList.add("active");
-            updateTeamgenoten(); // 🛠️ Belangrijk: Zorg dat teamgenoten weer correct werken
+            button.style.backgroundColor = "#27ae60"; // Groen bij selectie
+            updateTeamgenoten(); // 🛠️ Update teamgenoten-keuzes correct
         };
     });
+
+    // ✅ Reset ook de zetter- en slagen-knoppen zodat alles correct werkt
+    document.querySelectorAll("#zetter button, #slagen button, #teamgenoten button").forEach(button => {
+        button.onclick = function () {
+            document.querySelectorAll(`#${button.parentElement.id} button`).forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+        };
+    });
+
+    // ✅ Zorg dat teamgenoten correct worden bijgewerkt
+    updateTeamgenoten();
 }
 </script>
 </body>
