@@ -74,36 +74,16 @@
         </div>
         
         <h3>Ronde: <span id="ronde">1</span> | Gever: <span id="gever">Speler 1</span></h3>
-        
-        <div class="button-group" id="contracten">
-    <button onclick="selectContract(this, 'Samen 8')">Samen 8</button>
-    <button onclick="selectContract(this, 'Solo 5')">Solo 5</button>
-    <button onclick="selectContract(this, 'Samen 9')">Samen 9</button>
-    <button onclick="selectContract(this, 'Solo 6')">Solo 6</button>
-    <button onclick="selectContract(this, 'Samen 10')">Samen 10</button>
-    <button onclick="selectContract(this, 'Solo 7')">Solo 7</button>
-    <button onclick="selectContract(this, 'Samen 11')">Samen 11</button>
-    <button onclick="selectContract(this, 'Kleine Miserie')">Kleine Miserie</button>
-    <button onclick="selectContract(this, 'Samen 12')">Samen 12</button>
-    <button onclick="selectContract(this, 'Solo 8')">Solo 8</button>
-    <button onclick="selectContract(this, 'Piccolo')">Piccolo</button>
-    <button onclick="selectContract(this, 'Samen 13')">Samen 13</button>
-    <button onclick="selectContract(this, 'Solo 9')">Solo 9</button>
-    <button onclick="selectContract(this, 'Troel 8')">Troel 8</button>
-    <button onclick="selectContract(this, 'Miserie')">Miserie</button>
-    <button onclick="selectContract(this, 'Solo 10')">Solo 10</button>
-    <button onclick="selectContract(this, 'Solo 11')">Solo 11</button>
-    <button onclick="selectContract(this, 'Open Miserie')">Open Miserie</button>
-    <button onclick="selectContract(this, 'Solo 12')">Solo 12</button>
-    <button onclick="selectContract(this, 'Solo Slim 13')">Solo Slim 13</button>
-</div>
-        
+
+        <h3>Contracten</h3>
+        <div class="button-group" id="contracten"></div>
+
         <h3>Wie zet?</h3>
         <div class="button-group" id="zetter"></div>
-        
+
         <h3>Wie speelt mee?</h3>
         <div class="button-group" id="teamgenoten"></div>
-        
+
         <h3>Behaalde slagen:</h3>
         <div class="button-group" id="slagen"></div>
         
@@ -121,381 +101,95 @@
             <tr><td id="naam3">Speler 3</td><td id="score3">0</td></tr>
             <tr><td id="naam4">Speler 4</td><td id="score4">0</td></tr>
         </table>
-        
+
         <h3>Historiek:</h3>
         <div id="historiek"></div>
     </div>
 
     <script>
-        function selectContract(button, contract) {
-            document.querySelectorAll('#contracten button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            console.log("Gekozen contract:", contract);
-        }
+        let contractOpties = [
+            "Samen 8", "Solo 5", "Samen 9", "Solo 6", "Samen 10", "Solo 7",
+            "Samen 11", "Kleine Miserie", "Samen 12", "Solo 8", "Piccolo",
+            "Samen 13", "Solo 9", "Troel 8", "Miserie", "Solo 10",
+            "Solo 11", "Open Miserie", "Solo 12", "Solo Slim 13"
+        ];
 
-function berekenScore() {
-    let contractButton = document.querySelector("#contracten button.active");
-    let zetterButton = document.querySelector("#zetter button.active");
-    let slagenButton = document.querySelector("#slagen button.active");
+        function maakKnoppen() {
+            let contractenDiv = document.getElementById("contracten");
+            let zetterDiv = document.getElementById("zetter");
+            let teamgenotenDiv = document.getElementById("teamgenoten");
+            let slagenDiv = document.getElementById("slagen");
 
-    if (!contractButton) {
-        alert("❌ Kies een contract!");
-        return;
-    }
-    if (!zetterButton) {
-        alert("❌ Kies wie zet!");
-        return;
-    }
-    if (!slagenButton) {
-        alert("❌ Kies het aantal behaalde slagen!");
-        return;
-    }
+            contractenDiv.innerHTML = "";
+            contractOpties.forEach(contract => {
+                let btn = document.createElement("button");
+                btn.innerText = contract;
+                btn.onclick = function() {
+                    document.querySelectorAll("#contracten button").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    updateTeamgenoten();
+                };
+                contractenDiv.appendChild(btn);
+            });
 
-    let contract = contractButton.innerText;
-    let zetter = zetterButton.dataset.speler;
-    let behaaldeSlagen = parseInt(slagenButton.innerText);
+            zetterDiv.innerHTML = "";
+            for (let i = 1; i <= 4; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = "Speler " + i;
+                btn.dataset.speler = i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#zetter button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateTeamgenoten();
+                };
+                zetterDiv.appendChild(btn);
+            }
 
-    let teamgenoten = [];
-    document.querySelectorAll("#teamgenoten button.active").forEach(btn => {
-        teamgenoten.push(btn.dataset.speler);
-    });
+            teamgenotenDiv.innerHTML = "";
+            for (let i = 1; i <= 4; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = "Speler " + i;
+                btn.dataset.speler = i;
+                btn.onclick = function() {
+                    btn.classList.toggle('active');
+                };
+                teamgenotenDiv.appendChild(btn);
+            }
 
-    let contractInfo = puntenTabel[contract];
-
-    if (!contractInfo) {
-        alert("⚠️ Fout: Contract niet gevonden in puntenlijst!");
-        return;
-    }
-
-    // ✅ **Nieuwe berekening met extra slagen**
-    let geslaagdePunten;
-    if (behaaldeSlagen >= contractInfo.minimum) {
-        let extraSlagen = behaaldeSlagen - contractInfo.minimum;
-        geslaagdePunten = contractInfo.basispunten + (extraSlagen * contractInfo.overslag);
-    } else {
-        geslaagdePunten = contractInfo.verlies;
-    }
-
-    let spelerScores = {
-        "1": parseInt(document.getElementById("score1").innerText),
-        "2": parseInt(document.getElementById("score2").innerText),
-        "3": parseInt(document.getElementById("score3").innerText),
-        "4": parseInt(document.getElementById("score4").innerText)
-    };
-
-    if (contractInfo.team) {
-        spelerScores[zetter] += geslaagdePunten;
-        teamgenoten.forEach(speler => {
-            spelerScores[speler] += geslaagdePunten;
-        });
-
-        let tegenstanders = ["1", "2", "3", "4"].filter(speler => ![zetter, ...teamgenoten].includes(speler));
-        tegenstanders.forEach(speler => {
-            spelerScores[speler] -= geslaagdePunten;
-        });
-
-    } else {
-        spelerScores[zetter] += geslaagdePunten * 3;
-        let tegenstanders = ["1", "2", "3", "4"].filter(speler => speler !== zetter);
-        tegenstanders.forEach(speler => {
-            spelerScores[speler] -= geslaagdePunten;
-        });
-    }
-
-    document.getElementById("score1").innerText = spelerScores["1"];
-    document.getElementById("score2").innerText = spelerScores["2"];
-    document.getElementById("score3").innerText = spelerScores["3"];
-    document.getElementById("score4").innerText = spelerScores["4"];
-
-    let teamgenootNamen = teamgenoten.map(speler => document.querySelector(`#speler${speler}`).value).join(", ") || "Geen";
-    let zetterNaam = document.querySelector(`#speler${zetter}`).value;
-
-    let historiekDiv = document.getElementById("historiek");
-    let nieuweHistoriek = document.createElement("p");
-    nieuweHistoriek.innerText = `Ronde ${document.getElementById("ronde").innerText}: ${contract}, Zetter: ${zetterNaam}, Team: ${teamgenootNamen}, Punten: ${geslaagdePunten}`;
-    historiekDiv.prepend(nieuweHistoriek);
-
-    let huidigeRonde = parseInt(document.getElementById("ronde").innerText);
-    document.getElementById("ronde").innerText = huidigeRonde + 1;
-    let nieuweGever = (parseInt(document.getElementById("gever").innerText.split(" ")[1]) % 4) + 1;
-    document.getElementById("gever").innerText = `Speler ${nieuweGever}`;
-}
-
-    // ✅ **Scorelogica toepassen**
-    let puntenTabel = {
-        "Samen 8": { "basispunten": 8, "verlies": -11, "minimum": 8, "team": true, "overslag": 1 },
-        "Solo 5": { "basispunten": 3, "verlies": -4, "minimum": 5, "team": false, "overslag": 1 },
-        "Samen 9": { "basispunten": 11, "verlies": -14, "minimum": 9, "team": true, "overslag": 1 },
-        "Solo 6": { "basispunten": 4, "verlies": -5, "minimum": 6, "team": false, "overslag": 1 },
-        "Samen 10": { "basispunten": 14, "verlies": -17, "minimum": 10, "team": true, "overslag": 1 },
-        "Solo 7": { "basispunten": 5, "verlies": -6, "minimum": 7, "team": false, "overslag": 1 },
-        "Samen 11": { "basispunten": 17, "verlies": -20, "minimum": 11, "team": true, "overslag": 1 },
-        "Kleine Miserie": { "basispunten": 6, "verlies": -6, "minimum": 0, "team": false, "overslag": 0 },
-        "Samen 12": { "basispunten": 20, "verlies": -23, "minimum": 12, "team": true, "overslag": 1 },
-        "Solo 8": { "basispunten": 7, "verlies": -8, "minimum": 8, "team": false, "overslag": 1 },
-        "Piccolo": { "basispunten": 8, "verlies": -8, "minimum": 1, "team": false, "overslag": 0 },
-        "Samen 13": { "basispunten": 30, "verlies": -26, "minimum": 13, "team": true, "overslag": 1 },
-        "Solo 9": { "basispunten": 10, "verlies": -10, "minimum": 9, "team": false, "overslag": 1 },
-        "Troel 8": { "basispunten": 16, "verlies": -16, "minimum": 8, "team": true, "overslag": 1 },
-        "Miserie": { "basispunten": 12, "verlies": -12, "minimum": 0, "team": false, "overslag": 0 },
-        "Solo 10": { "basispunten": 15, "verlies": -15, "minimum": 10, "team": false, "overslag": 1 },
-        "Solo 11": { "basispunten": 20, "verlies": -20, "minimum": 11, "team": false, "overslag": 1 },
-        "Open Miserie": { "basispunten": 24, "verlies": -24, "minimum": 0, "team": false, "overslag": 0 },
-        "Solo 12": { "basispunten": 30, "verlies": -30, "minimum": 12, "team": false, "overslag": 1 },
-        "Solo Slim 13": { "basispunten": 60, "verlies": -60, "minimum": 13, "team": false, "overslag": 1 }
-    };
-    let contractInfo = puntenTabel[contract];
-
-    if (!contractInfo) {
-        alert("⚠️ Fout: Contract niet gevonden in puntenlijst!");
-        return;
-    }
-
-    let geslaagdePunten = (behaaldeSlagen >= contractInfo.minimum) ? contractInfo.punten : contractInfo.verlies;
-
-    // ✅ **Score toekennen**
-    let spelerScores = {
-        "1": parseInt(document.getElementById("score1").innerText),
-        "2": parseInt(document.getElementById("score2").innerText),
-        "3": parseInt(document.getElementById("score3").innerText),
-        "4": parseInt(document.getElementById("score4").innerText)
-    };
-
-    if (contractInfo.team) {
-        // **Team-spel: Punten voor zetter en teamgenoot, tegenstanders verliezen**
-        spelerScores[zetter] += geslaagdePunten;
-        teamgenoten.forEach(speler => {
-            spelerScores[speler] += geslaagdePunten;
-        });
-
-        let tegenstanders = ["1", "2", "3", "4"].filter(speler => ![zetter, ...teamgenoten].includes(speler));
-        tegenstanders.forEach(speler => {
-            spelerScores[speler] -= geslaagdePunten;
-        });
-
-    } else {
-        // **Solo-spel: Zetter krijgt punten, tegenstanders verliezen**
-        spelerScores[zetter] += geslaagdePunten * 3;
-        let tegenstanders = ["1", "2", "3", "4"].filter(speler => speler !== zetter);
-        tegenstanders.forEach(speler => {
-            spelerScores[speler] -= geslaagdePunten;
-        });
-    }
-
-    // ✅ **Update scoretabel**
-    document.getElementById("score1").innerText = spelerScores["1"];
-    document.getElementById("score2").innerText = spelerScores["2"];
-    document.getElementById("score3").innerText = spelerScores["3"];
-    document.getElementById("score4").innerText = spelerScores["4"];
-
-    // ✅ **Update historiek**
-    let teamgenootNamen = teamgenoten.map(speler => document.querySelector(`#speler${speler}`).value).join(", ") || "Geen";
-    let zetterNaam = document.querySelector(`#speler${zetter}`).value;
-
-    let historiekDiv = document.getElementById("historiek");
-    let nieuweHistoriek = document.createElement("p");
-    nieuweHistoriek.innerText = `Ronde ${document.getElementById("ronde").innerText}: ${contract}, Zetter: ${zetterNaam}, Team: ${teamgenootNamen}, Punten: ${geslaagdePunten}`;
-    historiekDiv.prepend(nieuweHistoriek);
-
-    // ✅ **Ronde en gever bijwerken**
-    let huidigeRonde = parseInt(document.getElementById("ronde").innerText);
-    document.getElementById("ronde").innerText = huidigeRonde + 1;
-    let nieuweGever = (parseInt(document.getElementById("gever").innerText.split(" ")[1]) % 4) + 1;
-    document.getElementById("gever").innerText = `Speler ${nieuweGever}`;
-}
-
-window.onload = function() {
-    maakKnoppen();
-    updateNamen(); // Zorg dat namen correct worden getoond bij het opstarten
-};
-
-function maakKnoppen() {
-    let zetterDiv = document.getElementById("zetter");
-    let teamgenotenDiv = document.getElementById("teamgenoten");
-    let slagenDiv = document.getElementById("slagen");
-
-    // **Maak de knoppen voor wie zet**
-    zetterDiv.innerHTML = ""; // Leegmaken om duplicaten te voorkomen
-    for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.innerText = "Speler " + i;
-        btn.dataset.speler = i;
-        btn.onclick = function() {
-            document.querySelectorAll('#zetter button').forEach(btn => btn.classList.remove('active'));
-            btn.classList.add('active');
-            updateTeamgenoten(); // Zorg dat teamgenoten worden bijgewerkt
-        };
-        zetterDiv.appendChild(btn);
-    }
-
-    // **Maak de knoppen voor wie speelt mee**
-    teamgenotenDiv.innerHTML = ""; // Leegmaken om duplicaten te voorkomen
-    for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.innerText = "Speler " + i;
-        btn.dataset.speler = i;
-        btn.onclick = function() {
-            btn.classList.toggle('active');
-        };
-        teamgenotenDiv.appendChild(btn);
-    }
-
-    // **Maak de knoppen voor behaalde slagen**
-    slagenDiv.innerHTML = ""; // Leegmaken om duplicaten te voorkomen
-    for (let i = 0; i <= 13; i++) {
-        let btn = document.createElement("button");
-        btn.innerText = i;
-        btn.dataset.slagen = i;
-        btn.onclick = function() {
-            document.querySelectorAll('#slagen button').forEach(btn => btn.classList.remove('active'));
-            btn.classList.add('active');
-        };
-        slagenDiv.appendChild(btn);
-    }
-}
-    // **BELANGRIJK**: Roep updateNamen() pas aan nadat de knoppen zijn gemaakt
-    updateNamen();
-};
-
-    function updateNamen() {
-        let speler1 = document.getElementById("speler1").value || "Speler 1";
-        let speler2 = document.getElementById("speler2").value || "Speler 2";
-        let speler3 = document.getElementById("speler3").value || "Speler 3";
-        let speler4 = document.getElementById("speler4").value || "Speler 4";
-
-        let namen = [speler1, speler2, speler3, speler4];
-
-        // Update de knoppen voor wie zet
-        document.querySelectorAll("#zetter button").forEach((btn, index) => {
-            btn.innerText = namen[index];
-        });
-
-        // Update de knoppen voor wie speelt mee
-        document.querySelectorAll("#teamgenoten button").forEach((btn, index) => {
-            btn.innerText = namen[index];
-        });
-
-        // Update de scoretabel
-        document.getElementById("naam1").innerText = speler1;
-        document.getElementById("naam2").innerText = speler2;
-        document.getElementById("naam3").innerText = speler3;
-        document.getElementById("naam4").innerText = speler4;
-    }
-
-    // Voeg event listeners toe zodat de namen meteen worden bijgewerkt bij het typen
-    document.getElementById("speler1").addEventListener("input", updateNamen);
-    document.getElementById("speler2").addEventListener("input", updateNamen);
-    document.getElementById("speler3").addEventListener("input", updateNamen);
-    document.getElementById("speler4").addEventListener("input", updateNamen);
-
-function updateTeamgenoten() {
-    let contractButton = document.querySelector("#contracten button.active");
-    let contract = contractButton ? contractButton.innerText : "";
-
-    let teamSpel = contract.includes("Samen");
-    let soloSpel = contract.includes("Solo") || contract.includes("Miserie") || contract.includes("Piccolo");
-
-    let zetterButton = document.querySelector("#zetter button.active");
-    let zetter = zetterButton ? zetterButton.dataset.speler : null;
-
-    let teamgenotenButtons = document.querySelectorAll("#teamgenoten button");
-
-    // Reset geselecteerde teamgenoten
-    let geselecteerdeTeamgenoten = [];
-
-    teamgenotenButtons.forEach(btn => {
-        btn.classList.remove("active");
-        btn.disabled = false;
-        btn.style.backgroundColor = "#3498db";
-
-        if (soloSpel) {
-            // ❌ Solo-spel: geen teamgenoten mogelijk
-            btn.disabled = true;
-            btn.style.backgroundColor = "#e74c3c";
-        } else if (teamSpel) {
-            if (btn.dataset.speler === zetter) {
-                // ❌ Team-spel: zetter mag niet gekozen worden
-                btn.disabled = true;
-                btn.style.backgroundColor = "#e74c3c";
+            slagenDiv.innerHTML = "";
+            for (let i = 0; i <= 13; i++) {
+                let btn = document.createElement("button");
+                btn.innerText = i;
+                btn.dataset.slagen = i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#slagen button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                };
+                slagenDiv.appendChild(btn);
             }
         }
 
-        // ✅ Klikfunctionaliteit voor teamgenoten
-        btn.onclick = function() {
-            if (!soloSpel) {
-                if (btn.classList.contains("active")) {
-                    // Deselecteer speler
-                    btn.classList.remove("active");
-                    btn.style.backgroundColor = "#3498db";
-                    geselecteerdeTeamgenoten = geselecteerdeTeamgenoten.filter(speler => speler !== btn.dataset.speler);
-                } else {
-                    // ✅ Zorg dat slechts **1 extra speler** gekozen kan worden bij een teamspel
-                    if (geselecteerdeTeamgenoten.length < 1) {
-                        btn.classList.add("active");
-                        btn.style.backgroundColor = "#27ae60";
-                        geselecteerdeTeamgenoten.push(btn.dataset.speler);
-                    }
-                }
-            }
+        function resetScores() {
+            document.getElementById("score1").innerText = "0";
+            document.getElementById("score2").innerText = "0";
+            document.getElementById("score3").innerText = "0";
+            document.getElementById("score4").innerText = "0";
+            document.getElementById("historiek").innerHTML = "";
+            document.getElementById("ronde").innerText = "1";
+            document.getElementById("gever").innerText = "Speler 1";
+
+            document.querySelectorAll("button").forEach(btn => {
+                btn.classList.remove("active");
+                btn.disabled = false;
+                btn.style.backgroundColor = "#3498db";
+            });
+
+            maakKnoppen();
+        }
+
+        window.onload = function() {
+            maakKnoppen();
         };
-    });
-}
-
-// ** Update teamgenoten wanneer een contract of zetter wordt gekozen **
-document.querySelectorAll("#contracten button").forEach(button => {
-    button.addEventListener("click", updateTeamgenoten);
-});
-
-document.querySelectorAll("#zetter button").forEach(button => {
-    button.addEventListener("click", updateTeamgenoten);
-});      
-function resetScores() {
-    // ✅ Zet scores terug naar 0
-    document.getElementById("score1").innerText = "0";
-    document.getElementById("score2").innerText = "0";
-    document.getElementById("score3").innerText = "0";
-    document.getElementById("score4").innerText = "0";
-
-    // ✅ Reset de historiek
-    document.getElementById("historiek").innerHTML = "";
-
-    // ✅ Reset ronde en gever
-    document.getElementById("ronde").innerText = "1";
-    document.getElementById("gever").innerText = "Speler 1";
-
-    // ✅ Verwijder de actieve status van alle knoppen
-    document.querySelectorAll("button").forEach(btn => {
-        btn.classList.remove("active"); 
-        btn.disabled = false; 
-        btn.style.backgroundColor = "#3498db"; 
-    });
-
-    // ✅ Maak alle knoppen opnieuw aan
-    maakKnoppen();
-
-    // ✅ Opnieuw event listeners toevoegen voor contract-knoppen
-    document.querySelectorAll("#contracten button").forEach(button => {
-        button.onclick = function () {
-            document.querySelectorAll("#contracten button").forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
-            updateTeamgenoten();
-        };
-    });
-
-    alert("✅ Scores en instellingen zijn gereset!");
-}
-
-    // ✅ Reset ook de zetter- en slagen-knoppen zodat alles correct werkt
-    document.querySelectorAll("#zetter button, #slagen button, #teamgenoten button").forEach(button => {
-        button.onclick = function () {
-            document.querySelectorAll(`#${button.parentElement.id} button`).forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
-        };
-    });
-
-    // ✅ Zorg dat teamgenoten correct worden bijgewerkt
-    updateTeamgenoten();
-}
-</script>
+    </script>
 </body>
 </html>
