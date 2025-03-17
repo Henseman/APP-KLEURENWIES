@@ -164,28 +164,27 @@ function berekenScore() {
 
     // ✅ **Scorelogica toepassen**
     let puntenTabel = {
-        "Samen 8": { "punten": 8, "verlies": -11, "minimum": 8, "team": true },
-        "Solo 5": { "punten": 3, "verlies": -4, "minimum": 5, "team": false },
-        "Samen 9": { "punten": 11, "verlies": -14, "minimum": 9, "team": true },
-        "Solo 6": { "punten": 4, "verlies": -5, "minimum": 6, "team": false },
-        "Samen 10": { "punten": 14, "verlies": -17, "minimum": 10, "team": true },
-        "Solo 7": { "punten": 5, "verlies": -6, "minimum": 7, "team": false },
-        "Samen 11": { "punten": 17, "verlies": -20, "minimum": 11, "team": true },
-        "Kleine Miserie": { "punten": 6, "verlies": -6, "minimum": 0, "team": false },
-        "Samen 12": { "punten": 20, "verlies": -23, "minimum": 12, "team": true },
-        "Solo 8": { "punten": 7, "verlies": -8, "minimum": 8, "team": false },
-        "Piccolo": { "punten": 8, "verlies": -8, "minimum": 1, "team": false },
-        "Samen 13": { "punten": 30, "verlies": -26, "minimum": 13, "team": true },
-        "Solo 9": { "punten": 10, "verlies": -10, "minimum": 9, "team": false },
-        "Troel 8": { "punten": 16, "verlies": -16, "minimum": 8, "team": true },
-        "Miserie": { "punten": 12, "verlies": -12, "minimum": 0, "team": false },
-        "Solo 10": { "punten": 15, "verlies": -15, "minimum": 10, "team": false },
-        "Solo 11": { "punten": 20, "verlies": -20, "minimum": 11, "team": false },
-        "Open Miserie": { "punten": 24, "verlies": -24, "minimum": 0, "team": false },
-        "Solo 12": { "punten": 30, "verlies": -30, "minimum": 12, "team": false },
-        "Solo Slim 13": { "punten": 60, "verlies": -60, "minimum": 13, "team": false }
+        "Samen 8": { "basispunten": 8, "verlies": -11, "minimum": 8, "team": true, "overslag": 1 },
+        "Solo 5": { "basispunten": 3, "verlies": -4, "minimum": 5, "team": false, "overslag": 1 },
+        "Samen 9": { "basispunten": 11, "verlies": -14, "minimum": 9, "team": true, "overslag": 1 },
+        "Solo 6": { "basispunten": 4, "verlies": -5, "minimum": 6, "team": false, "overslag": 1 },
+        "Samen 10": { "basispunten": 14, "verlies": -17, "minimum": 10, "team": true, "overslag": 1 },
+        "Solo 7": { "basispunten": 5, "verlies": -6, "minimum": 7, "team": false, "overslag": 1 },
+        "Samen 11": { "basispunten": 17, "verlies": -20, "minimum": 11, "team": true, "overslag": 1 },
+        "Kleine Miserie": { "basispunten": 6, "verlies": -6, "minimum": 0, "team": false, "overslag": 0 },
+        "Samen 12": { "basispunten": 20, "verlies": -23, "minimum": 12, "team": true, "overslag": 1 },
+        "Solo 8": { "basispunten": 7, "verlies": -8, "minimum": 8, "team": false, "overslag": 1 },
+        "Piccolo": { "basispunten": 8, "verlies": -8, "minimum": 1, "team": false, "overslag": 0 },
+        "Samen 13": { "basispunten": 30, "verlies": -26, "minimum": 13, "team": true, "overslag": 1 },
+        "Solo 9": { "basispunten": 10, "verlies": -10, "minimum": 9, "team": false, "overslag": 1 },
+        "Troel 8": { "basispunten": 16, "verlies": -16, "minimum": 8, "team": true, "overslag": 1 },
+        "Miserie": { "basispunten": 12, "verlies": -12, "minimum": 0, "team": false, "overslag": 0 },
+        "Solo 10": { "basispunten": 15, "verlies": -15, "minimum": 10, "team": false, "overslag": 1 },
+        "Solo 11": { "basispunten": 20, "verlies": -20, "minimum": 11, "team": false, "overslag": 1 },
+        "Open Miserie": { "basispunten": 24, "verlies": -24, "minimum": 0, "team": false, "overslag": 0 },
+        "Solo 12": { "basispunten": 30, "verlies": -30, "minimum": 12, "team": false, "overslag": 1 },
+        "Solo Slim 13": { "basispunten": 60, "verlies": -60, "minimum": 13, "team": false, "overslag": 1 }
     };
-
     let contractInfo = puntenTabel[contract];
 
     if (!contractInfo) {
